@@ -3,202 +3,1027 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Norish Shopping Card — como funciona</title>
+<title>Norish Shopping Card — como funciona, do fio à interface</title>
 <style>
   :root{
-    --primary:#03a9f4;
-    --bg:#f2f4f7;
-    --card:#ffffff;
-    --ink:#1f2328;
-    --muted:#5b6570;
-    --line:#dfe3e8;
-    --code-bg:#0f172a;
-    --code-ink:#e2e8f0;
-    --ok:#1a7f37;
-    --warn:#9a6700;
+    --primary:#03a9f4; --primary-dark:#0288d1;
+    --bg:#f2f4f7; --card:#ffffff; --ink:#1f2328; --muted:#5b6570; --line:#dfe3e8;
+    --code-bg:#0f172a; --code-ink:#e2e8f0;
+    --ok:#1a7f37; --warn:#9a6700; --concept:#7b1fa2;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{
-    background:var(--bg); color:var(--ink);
-    font:16px/1.6 'Roboto','Noto Sans',system-ui,-apple-system,sans-serif;
-    -webkit-text-size-adjust:100%;
-  }
-  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px}
-  header.top{
-    background:linear-gradient(135deg,#0288d1,#03a9f4);
-    color:#fff;border-radius:16px;padding:28px 26px;margin-bottom:28px;
-    box-shadow:0 6px 20px rgba(2,136,209,.25);
-  }
-  header.top h1{margin:0 0 6px;font-size:1.7rem;letter-spacing:-.2px}
-  header.top p{margin:0;opacity:.95;font-size:.98rem}
-  header.top .meta{margin-top:14px;font-size:.82rem;opacity:.85}
-  h2{
-    font-size:1.25rem;margin:38px 0 12px;padding-bottom:8px;
-    border-bottom:2px solid var(--line);
-  }
-  h3{font-size:1.02rem;margin:24px 0 8px}
+  body{background:var(--bg);color:var(--ink);
+    font:16px/1.65 'Roboto','Noto Sans',system-ui,-apple-system,sans-serif;
+    -webkit-text-size-adjust:100%}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 20px 90px}
+  header.top{background:linear-gradient(135deg,#0288d1,#03a9f4);color:#fff;
+    border-radius:16px;padding:30px 28px;margin-bottom:26px;
+    box-shadow:0 8px 24px rgba(2,136,209,.25)}
+  header.top h1{margin:0 0 8px;font-size:1.75rem;letter-spacing:-.2px;line-height:1.2}
+  header.top p{margin:0;opacity:.96;font-size:.99rem;max-width:72ch}
+  header.top .meta{margin-top:14px;font-size:.82rem;opacity:.88}
+  header.top a{color:#fff}
+  h2{font-size:1.3rem;margin:44px 0 14px;padding-bottom:9px;
+     border-bottom:2px solid var(--line);letter-spacing:-.1px}
+  h2 .n{display:inline-block;min-width:2.1em;color:var(--primary-dark);font-weight:800}
+  h3{font-size:1.05rem;margin:26px 0 8px}
+  h4{font-size:.9rem;margin:20px 0 6px;color:var(--muted);
+     text-transform:uppercase;letter-spacing:.05em}
   p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:5px 0}
   a{color:#0277bd}
   code{font-family:'JetBrains Mono','Fira Mono',Consolas,monospace;font-size:.88em}
-  p code,li code,td code{background:#eef2f6;padding:2px 5px;border-radius:5px}
-  pre{
-    background:var(--code-bg);color:var(--code-ink);border-radius:10px;
-    padding:14px 16px;overflow:auto;font-size:.85rem;line-height:1.55;
-    margin:12px 0;
-  }
+  p code,li code,td code,h3 code{background:#eef2f6;padding:2px 5px;border-radius:5px}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:15px 17px;
+      overflow:auto;font-size:.84rem;line-height:1.6;margin:13px 0}
   pre code{background:none;padding:0;color:inherit}
-  .out{
-    background:#fbfcfd;border:1px solid var(--line);border-left:4px solid var(--primary);
-    border-radius:8px;padding:12px 14px;margin:12px 0;font-family:Consolas,monospace;
-    font-size:.82rem;white-space:pre;overflow:auto;color:#2b3138;
-  }
-  .out strong{color:var(--ok)}
-  .cardbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+  pre.term{background:#0b1220;border:1px solid #1e293b}
+  .out{background:#fbfcfd;border:1px solid var(--line);border-left:4px solid var(--primary);
+       border-radius:8px;padding:12px 14px;margin:13px 0;font-family:Consolas,monospace;
+       font-size:.81rem;white-space:pre;overflow:auto;color:#2b3138;line-height:1.55}
+  .out strong{color:var(--ok);font-weight:700}
+  .cardbox{background:var(--card);border:1px solid var(--line);border-radius:12px;
+           padding:16px 18px;margin:14px 0}
   .grid{display:grid;gap:14px;grid-template-columns:1fr}
-  @media(min-width:720px){ .grid.two{grid-template-columns:1fr 1fr} }
+  @media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr}}
   table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.9rem}
   th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
   th{background:#eef2f6;font-weight:600}
-  .tag{
-    display:inline-block;background:#e1f5fe;color:#0277bd;border:1px solid #b3e5fc;
-    border-radius:999px;padding:1px 9px;font-size:.76rem;font-weight:600;margin-right:6px;
-  }
-  .note{border-left:4px solid var(--warn);background:#fff8e6;padding:10px 14px;border-radius:8px;margin:14px 0;font-size:.92rem}
-  .ok{border-left-color:var(--ok);background:#eaf7ee}
-  .flow{
-    display:flex;flex-wrap:wrap;align-items:center;gap:10px;
-    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:16px 0;
-  }
-  .node{
-    border:2px solid var(--primary);border-radius:10px;padding:9px 13px;
-    background:#f7fcff;font-size:.85rem;font-weight:600;text-align:center;line-height:1.35;
-  }
-  .node small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
-  .arrow{color:var(--primary);font-weight:700;font-size:1.2rem}
-  .arrow small{display:block;color:var(--muted);font-weight:400;font-size:.7rem;white-space:nowrap}
-  .demo{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:16px 0;display:flex;justify-content:center}
-  footer{margin-top:50px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px}
-  .kbd{background:#eef2f6;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;font-size:.8rem}
+  .tag{display:inline-block;background:#e1f5fe;color:#0277bd;border:1px solid #b3e5fc;
+       border-radius:999px;padding:1px 9px;font-size:.75rem;font-weight:600;margin-right:6px}
+  .concept{border-left:4px solid var(--concept);background:#faf5ff;padding:12px 16px;
+           border-radius:8px;margin:15px 0}
+  .concept .lbl{display:block;font-size:.73rem;font-weight:800;letter-spacing:.08em;
+                text-transform:uppercase;color:var(--concept);margin-bottom:4px}
+  .note{border-left:4px solid var(--warn);background:#fff8e6;padding:11px 15px;
+        border-radius:8px;margin:14px 0;font-size:.94rem}
+  .note.good{border-left-color:var(--ok);background:#eaf7ee}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:9px;background:var(--card);
+        border:1px solid var(--line);border-radius:12px;padding:18px;margin:16px 0}
+  .node{border:2px solid var(--primary);border-radius:10px;padding:9px 13px;background:#f7fcff;
+        font-size:.83rem;font-weight:600;text-align:center;line-height:1.35}
+  .node small{display:block;font-weight:400;color:var(--muted);font-size:.74rem}
+  .node.ghost{border-style:dashed;border-color:var(--muted);background:#fff}
+  .arrow{color:var(--primary);font-weight:700;font-size:1.15rem;text-align:center}
+  .arrow small{display:block;color:var(--muted);font-weight:400;font-size:.68rem;white-space:nowrap}
+  .demo{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;
+        margin:16px 0;display:flex;justify-content:center}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:12px;
+       padding:18px 22px;margin:0 0 8px}
+  .toc h3{margin:0 0 10px}
+  .toc ol{margin:0;padding-left:20px}
+  @media(min-width:760px){.toc ol{columns:2;column-gap:32px}}
+  .toc li{margin:3px 0;break-inside:avoid}
+  .toc a{text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  footer{margin-top:56px;color:var(--muted);font-size:.85rem;
+         border-top:1px solid var(--line);padding-top:16px}
+  .kbd{background:#eef2f6;border:1px solid var(--line);border-bottom-width:2px;
+       border-radius:6px;padding:1px 6px;font-size:.8rem}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header class="top">
-  <h1>Norish Shopping Card</h1>
-  <p>Como funciona o cartão de lista de compras estilo Bring! para Home Assistant,
-     assente nas entidades to-do da integração <code>hass-norish</code>.</p>
-  <div class="meta">
-    v1.0.0 &middot; <a href="https://github.com/jdrdionisio/norish-shopping-card" style="color:#fff;text-decoration:underline">github.com/jdrdionisio/norish-shopping-card</a>
+  <h1>Norish Shopping Card — como funciona</h1>
+  <p>Do cabo de rede à interface: os conceitos de rede que fazem o cartão falar, os conceitos
+     de Home Assistant que o fazem pertencer ao sistema, e o caminho concreto que cada toque
+     no ecrã percorre até ao Norish.</p>
+  <div class="meta">v1.1.0 &middot;
+    <a href="https://github.com/jdrdionisio/norish-shopping-card">github.com/jdrdionisio/norish-shopping-card</a>
   </div>
 </header>
 
-<h2>1. Visão geral</h2>
+<div class="toc">
+  <h3>Índice</h3>
+  <ol>
+    <li><a href="#p1">Cliente, servidor e protocolo</a></li>
+    <li><a href="#p2">Um pedido HTTP por dentro</a></li>
+    <li><a href="#p3">TLS e o proxy inverso</a></li>
+    <li><a href="#p4">Autenticação: chaves em cabeçalhos</a></li>
+    <li><a href="#p5">Origem, mesma-origem e CORS</a></li>
+    <li><a href="#p6">Polling e push</a></li>
+    <li><a href="#p7">HTTP e WebSocket lado a lado</a></li>
+    <li><a href="#p8">RPC: chamar funções pela rede</a></li>
+    <li><a href="#p9">O Home Assistant por alto</a></li>
+    <li><a href="#p10">A máquina de estados e as entidades</a></li>
+    <li><a href="#p11">Integrações: config entries e coordenadores</a></li>
+    <li><a href="#p12">Plataformas: como nasce uma entidade <code>todo</code></a></li>
+    <li><a href="#p13">Serviços: a API de verbos</a></li>
+    <li><a href="#p14">As duas APIs do HA: REST e WebSocket</a></li>
+    <li><a href="#p15">Lovelace, dashboards e recursos</a></li>
+    <li><a href="#p16">Web Components: a linguagem dos cartões</a></li>
+    <li><a href="#p17">O contrato de um cartão</a></li>
+    <li><a href="#p18">Aparecer no seletor de cartões</a></li>
+    <li><a href="#p19">A topologia completa deste cartão</a></li>
+    <li><a href="#p20">Ler: a subscrição, passo a passo</a></li>
+    <li><a href="#p21">Escrever: serviços, e uma armadilha real</a></li>
+    <li><a href="#p22">O modelo de renderização</a></li>
+    <li><a href="#p23">Deteção de duplicados</a></li>
+    <li><a href="#p24">A despensa, e uma correção importante</a></li>
+    <li><a href="#p25">Limitações</a></li>
+    <li><a href="#p26">Demonstração ao vivo</a></li>
+    <li><a href="#p27">Verificação na instância real</a></li>
+    <li><a href="#p28">Glossário</a></li>
+  </ol>
+</div>
 
-<p>O cartão é uma camada de interface. Não conhece o Norish, não tem chave de API e não faz
-pedidos HTTP ao servidor de receitas. Lê e escreve <strong>entidades to-do do Home Assistant</strong>,
-e é a integração que trata do resto.</p>
+<div class="concept">
+  <span class="lbl">Como ler isto</span>
+  Cada conceito aparece três vezes: o que é (a ideia), porque existe (o problema que resolve)
+  e como este cartão o usa (o código e as saídas reais). As caixas claras com texto monoespaçado
+  são transcrições verdadeiras de execuções contra a instância de Home Assistant
+  <em>2026.11.0</em> — não são exemplos inventados. Onde algo não foi verificado, está dito.
+</div>
+
+<h2 id="p1"><span class="n">1</span>Cliente, servidor e protocolo</h2>
+
+<p>Tudo o que se segue assenta numa divisão simples de papéis. Um <strong>cliente</strong>
+inicia pedidos; um <strong>servidor</strong> espera por eles e responde. O cliente nunca
+«entra» no servidor: pergunta, e o servidor decide o que devolve.</p>
+
+<p>Um <strong>protocolo</strong> é o acordo sobre a forma dessas mensagens — que texto vai,
+em que ordem, com que campos, e o que cada resposta significa. Sem acordo, dois programas
+conseguem falar um com o outro na rede e mesmo assim não se entendem.</p>
+
+<p>Neste sistema há vários clientes e servidores empilhados:</p>
 
 <div class="flow">
-  <div class="node">Cartão<br><small>norish-shopping-card.js</small></div>
-  <div class="arrow">&rarr;<small>websocket · serviços</small></div>
-  <div class="node">HA core<br><small>componente <code>todo</code></small></div>
-  <div class="arrow">&rarr;<small>tRPC + x-api-key</small></div>
-  <div class="node">hass-norish<br><small>custom_component</small></div>
+  <div class="node ghost">Browser<br><small>é cliente (do HA)</small></div>
+  <div class="arrow">&harr;</div>
+  <div class="node">Home Assistant<br><small>é servidor do browser<br>e cliente do Norish</small></div>
+  <div class="arrow">&harr;</div>
+  <div class="node">Norish<br><small>é servidor da sua API</small></div>
+</div>
+
+<p>O cartão corre no browser. O browser fala com o Home Assistant. O Home Assistant fala com
+o Norish. <strong>Nunca</strong> o browser fala diretamente com o Norish — e o porquê disso é
+o tema dos capítulos 5 e 24.</p>
+
+<p>O detalhe que vale a pena guardar: o Home Assistant é <em>ao mesmo tempo</em> servidor
+(para o browser) e cliente (para o Norish). Essa dupla personalidade é o que lhe permite ser
+o intermediário — e é o que mantém a chave da API fora do browser.</p>
+
+<h2 id="p2"><span class="n">2</span>Um pedido HTTP por dentro</h2>
+
+<p><strong>HTTP</strong> é o protocolo clássico de pedido-resposta da Web. Um pedido tem
+sempre esta anatomia:</p>
+
+<table>
+  <tr><th>Parte</th><th>O que é</th><th>Exemplo real deste projeto</th></tr>
+  <tr><td><strong>Método</strong></td><td>O verbo: que tipo de operação se pretende.</td>
+      <td><code>GET</code> (ler), <code>POST</code> (criar/agir), <code>DELETE</code> (apagar)</td></tr>
+  <tr><td><strong>Caminho</strong></td><td>Qual recurso, dentro do servidor.</td>
+      <td><code>/api/services/todo/add_item</code></td></tr>
+  <tr><td><strong>Cabeçalhos</strong></td><td>Metadados: quem sou, que formato aceito, que formato envio.</td>
+      <td><code>Authorization: Bearer &lt;token&gt;</code></td></tr>
+  <tr><td><strong>Corpo</strong></td><td>O conteúdo, quando há.</td>
+      <td><code>{"entity_id":"todo.norish_unsorted","item":"Leite"}</code></td></tr>
+</table>
+
+<p>A resposta tem sempre um <strong>código de estado</strong>, e o primeiro dígito diz a
+família:</p>
+
+<table>
+  <tr><th>Código</th><th>Significado</th><th>Neste projeto</th></tr>
+  <tr><td><code>2xx</code></td><td>Correu bem.</td><td><code>200</code> — item adicionado.</td></tr>
+  <tr><td><code>3xx</code></td><td>Vai buscar isto a outro sítio (redirecionamento).</td>
+      <td><code>307</code> para <code>/login</code> quando a rota exige sessão.</td></tr>
+  <tr><td><code>4xx</code></td><td>O pedido está mal ou não está autorizado.</td>
+      <td><code>401</code> chave inválida; <code>400</code> dados malformados.</td></tr>
+  <tr><td><code>5xx</code></td><td>O servidor falhou.</td><td>—</td></tr>
+</table>
+
+<div class="concept">
+  <span class="lbl">Porque isto importa</span>
+  Um <code>200</code> só diz que a mensagem foi aceite. Mais adiante (capítulo 21) vamos ver um
+  serviço que responde <code>200</code> e <em>não faz</em> o que pedimos. Por isso a regra, aqui
+  e em qualquer integração: <strong>confirmar sempre por leitura de volta</strong>, nunca pelo
+  código da resposta.
+</div>
+
+<p>Pedido real, à mão, para provar que o serviço existe:</p>
+
+<pre class="term"><code>$ curl -X POST "$HASS_URL/api/services/todo/add_item" \
+    -H "Authorization: Bearer $HASS_TOKEN" \
+    -H 'Content-Type: application/json' \
+    -d '{"entity_id":"todo.norish_unsorted","item":"TESTE — apagar"}'</code></pre>
+
+<div class="out">HTTP 200</div>
+
+<p>Alguns serviços, além da resposta normal, podem devolver <strong>dados</strong>. Em HTTP
+puro isso tem de ser pedido explicitamente, com <code>?return_response</code> — e é assim que
+se lê o conteúdo de uma lista sem ser o cartão a fazê-lo:</p>
+
+<pre class="term"><code>$ curl -X POST "$HASS_URL/api/services/todo/get_items?return_response" … \
+    -d '{"entity_id":"todo.norish_unsorted"}'</code></pre>
+
+<div class="out">{
+  "service_response": {
+    "todo.norish_unsorted": {
+      "items": [
+        {
+          "summary": "TESTE — apagar",
+          "uid": "ac8bfdc4-f02f-4f7e-996b-d26d9b5bb2ea",
+          "status": "needs_action"
+        }
+      ]
+    }
+  }
+}</div>
+
+<p>Três campos definem um item de lista, e o cartão vive deles: <code>summary</code> (o texto),
+<code>uid</code> (a identidade estável — é com ele que se apaga ou edita) e
+<code>status</code> (por fazer ou feito).</p>
+
+<h2 id="p3"><span class="n">3</span>TLS e o proxy inverso</h2>
+
+<p>O «S» de <strong>HTTPS</strong> é o <strong>TLS</strong>: uma camada que envolve o HTTP num
+canal cifrado e autenticado. O cliente confirma a identidade do servidor através de um
+<strong>certificado</strong> emitido por uma autoridade. Tudo o que descrevemos continua a
+acontecer dentro desse canal — o TLS é largura, não sintaxe.</p>
+
+<p>Os endereços deste projeto são nomes, não IPs: <code>https://homeassistant.jdrdionisio.com</code>
+e <code>https://norish.jdrdionisio.com</code>. O <strong>DNS</strong> traduz o nome num
+endereço IP, e o TLS garante que o certificado corresponde ao <em>nome</em> — é por isso que o
+certificado é por nome e não por IP.</p>
+
+<p>Uma <strong>proxy inversa</strong> é um servidor que fica à frente de outro: recebe o pedido
+em nome da aplicação, termina o TLS e reencaminha-o. Do ponto de vista do cliente, a proxy
+<em>é</em> o servidor.</p>
+
+<div class="flow">
+  <div class="node ghost">Browser</div>
+  <div class="arrow">&rarr;<small>TLS</small></div>
+  <div class="node">Proxy inversa<br><small>termina TLS, <code>/api/…</code> → app</small></div>
   <div class="arrow">&rarr;</div>
-  <div class="node">Norish<br><small>API v1</small></div>
+  <div class="node">Home Assistant<br><small>responde ao pedido</small></div>
 </div>
 
-<p>Há duas direções de tráfego, e cada uma usa um mecanismo diferente:</p>
+<p>Para o cartão isto é irrelevante, e é essa a beleza: ele conhece apenas o caminho relativo
+<code>/api/…</code> e deixa o resto ao browser e à rede. É por isso que o mesmo cartão funciona
+em <code>http://192.168.1.10:8123</code> e em <code>https://homeassistant.jdrdionisio.com</code>
+sem uma linha de configuração a mudar.</p>
 
-<table>
-  <tr><th>Direção</th><th>Mecanismo</th><th>Porquê</th></tr>
-  <tr>
-    <td><strong>Ler</strong> a lista</td>
-    <td>Subscrição websocket <code>todo/item/subscribe</code></td>
-    <td>O servidor empurra a lista; o cartão não faz polling e atualiza sozinho.</td>
-  </tr>
-  <tr>
-    <td><strong>Escrever</strong> (adicionar, marcar, editar, apagar)</td>
-    <td>Serviços <code>todo.*</code> via <code>hass.callService()</code></td>
-    <td>Reutiliza o caminho oficial; o HA valida e a integração sincroniza com o Norish.</td>
-  </tr>
-</table>
+<h2 id="p4"><span class="n">4</span>Autenticação: chaves em cabeçalhos</h2>
 
-<h2>2. Porque um cartão e não uma integração</h2>
+<p>Autenticar é provar quem somos. A forma mais simples na Web é um <strong>segredo
+partilhado</strong> que viaja em cada pedido. Nunca no corpo do URL — porque os URLs ficam
+registados em históricos, registos de proxies e referrers — mas num <strong>cabeçalho</strong>.</p>
 
-<p>Porque os dados já existem como entidades. A integração <code>hass-norish</code> cria
-<strong>uma entidade to-do por loja</strong> mais uma para os itens sem loja. Uma integração nova
-obrigaria a repetir autenticação, limites de pedidos e serialização que a existente já resolve —
-e colocaria uma chave de API num ficheiro de JavaScript.</p>
+<p>Dois estilos aparecem neste projeto:</p>
 
-<div class="cardbox">
-  <span class="tag">regra</span>
-  Se o dado já está exposto como entidade, o cartão conduz a entidade. A chave fica no servidor,
-  não há CORS e herda-se a lógica de retry da integração.
+<pre><code>Authorization: Bearer &lt;token&gt;     # o Home Assistant usa este
+x-api-key: &lt;chave&gt;                 # o Norish usa este (cabeçalho à medida)</code></pre>
+
+<div class="concept">
+  <span class="lbl">Conceito: de quem é o segredo</span>
+  Quem guarda o segredo decide a arquitetura. Aqui há dois segredos distintos: o
+  <strong>token do Home Assistant</strong>, que o browser usa, e a <strong>chave da API do
+  Norish</strong>, que o Home Assistant usa. O cartão só vê o primeiro. O segundo nunca sai do
+  servidor — e por isso o cartão <em>não pode</em> falar com o Norish, mesmo que quisesse.
 </div>
 
-<h2>3. As entidades em uso</h2>
+<p>No código do cartão, o token é um detalhe invisível: o browser já está autenticado na sessão
+do HA, e as chamadas passam por <code>hass.callService()</code> e <code>hass.connection</code>,
+que trazem a autenticação com elas. O cartão nunca escreve um token em lado nenhum, e é assim
+que deve ser.</p>
 
-<p>Nesta instância (HA 2026.11.0) o cartão descobre pelo prefixo <code>todo.norish_</code>:</p>
+<h2 id="p5"><span class="n">5</span>Origem, mesma-origem e CORS</h2>
+
+<p>Este capítulo explica a limitação central do projeto. Vale a pena ser lido com atenção.</p>
+
+<p>Uma <strong>origem</strong> é o trio <em>esquema + máquina + porta</em>:</p>
+
+<pre><code>https://homeassistant.jdrdionisio.com   <-- origem do dashboard
+https://norish.jdrdionisio.com          <-- origem DIFERENTE</code></pre>
+
+<p>Os dois podem apontar para a mesma casa, talvez para o mesmo IP — e ainda assim são
+<strong>origens diferentes</strong>, porque os nomes são diferentes. A comparação é textual,
+não geográfica.</p>
+
+<p>A <strong>política de mesma-origem</strong> é o mecanismo de segurança do browser: uma página
+carregada de uma origem não pode <em>ler</em> a resposta de um pedido feito a outra origem. Sem
+isto, uma página maliciosa qualquer poderia chamar a API do teu banco a partir de um separador
+aberto no teu browser, usando a tua sessão.</p>
+
+<p>Mas a Web não vive de sites isolados, e por isso existe um mecanismo explícito de abertura: o
+<strong>CORS</strong> (<em>Cross-Origin Resource Sharing</em>). É um diálogo em que o servidor
+declara quem pode ler as suas respostas, através de cabeçalhos <code>Access-Control-Allow-*</code>.</p>
+
+<p>Para pedidos que «não são simples» — por exemplo, os que trazem um cabeçalho personalizado
+como <code>x-api-key</code> — o browser não manda o pedido a sério de imediato. Envia primeiro um
+<strong>pedido de verificação</strong> com o método <code>OPTIONS</code>, a perguntar se pode:</p>
+
+<div class="out">$ curl -X OPTIONS https://norish.jdrdionisio.com/api/trpc/pantry.list \
+    -H "Origin: https://homeassistant.jdrdionisio.com" \
+    -H "Access-Control-Request-Method: GET" \
+    -H "Access-Control-Request-Headers: x-api-key"
+
+HTTP/2 204
+<strong>(nenhum cabeçalho Access-Control-*)</strong></div>
+
+<p>O <code>204</code> é «recebi». A ausência total de <code>Access-Control-Allow-Origin</code> é o
+servidor a dizer, em silêncio, «não autorizo». O browser interpreta esse silêncio como recusa e
+<strong>bloqueia o pedido antes de o enviar</strong> — o que o programador vê na consola é um
+erro de CORS, não um erro do servidor.</p>
+
+<div class="note">
+  <strong>Consequência para este cartão.</strong> Como o Norish não autoriza a origem do Home
+  Assistant, o cartão não pode pedir nada ao Norish. E mesmo que autorizasse, a chave da API
+  teria de estar no JavaScript do cartão — legível por quem abre as ferramentas do browser num
+  dashboard. Conclusão: <em>os dados do Norish têm de entrar pelo servidor do Home Assistant</em>.
+  É o que a integração faz, e é o que o sensor REST do capítulo 24 faz para a despensa.
+</div>
+
+<h2 id="p6"><span class="n">6</span>Polling e push</h2>
+
+<p>Se o cliente quer saber quando algo muda, há duas estratégias.</p>
+
+<div class="grid two">
+  <div class="cardbox">
+    <h3 style="margin-top:0">Polling — perguntar sempre</h3>
+    <p>O cliente pergunta de tempos a tempos: «mudou?». É simples e funciona em HTTP puro. O
+    custo é medível: 5 lojas × 1 pergunta a cada 10 segundos = 43 200 perguntas por dia, das
+    quais a esmagadora maioria recebe «não». Pior: com um limite de 500 pedidos por hora no
+    Norish, o polling sozinho esgotaria a quota.</p>
+  </div>
+  <div class="cardbox">
+    <h3 style="margin-top:0">Push — o servidor avisa</h3>
+    <p>O cliente diz uma vez «quero saber dos itens desta lista» e fica à escuta. O servidor
+    envia uma mensagem quando — e só quando — algo muda. Zero tráfego inútil, e a atualização é
+    imediata em vez de «até 10 segundos depois».</p>
+  </div>
+</div>
+
+<p>A dificuldade do push é que o HTTP clássico não o permite: o protocolo é pedido-resposta e um
+servidor não tem como começar a falar. É por isso que existe o WebSocket.</p>
+
+<h2 id="p7"><span class="n">7</span>HTTP e WebSocket lado a lado</h2>
+
+<p>Um <strong>WebSocket</strong> começa como um pedido HTTP que pede uma <em>promoção</em>
+(«<em>upgrade</em>»). Se o servidor aceitar, a ligação deixa de ser pedido-resposta e passa a ser
+um <strong>canal bidirecional aberto</strong>: qualquer um dos lados pode enviar mensagens, a
+qualquer momento, indefinidamente.</p>
 
 <table>
-  <tr><th>Entidade</th><th>Nome</th><th>Lista</th></tr>
-  <tr><td><code>todo.norish_unsorted</code></td><td>Unsorted</td><td>Itens sem loja (aparece sempre primeiro)</td></tr>
-  <tr><td><code>todo.norish_auchan</code></td><td>Auchan</td><td>Itens da loja Auchan</td></tr>
-  <tr><td><code>todo.norish_continente</code></td><td>Continente</td><td>Itens da loja Continente</td></tr>
-  <tr><td><code>todo.norish_lidl</code></td><td>Lidl</td><td>Itens da loja Lidl</td></tr>
-  <tr><td><code>todo.norish_mercadona</code></td><td>Mercadona</td><td>Itens da loja Mercadona</td></tr>
+  <tr><th></th><th>HTTP</th><th>WebSocket</th></tr>
+  <tr><td>Início</td><td>Cliente pergunta, servidor responde, fim.</td><td>Um pedido de promoção, depois canal aberto.</td></tr>
+  <tr><td>Quem fala primeiro</td><td>Só o cliente.</td><td>Ambos, quando quiserem.</td></tr>
+  <tr><td>Duração</td><td>Uma troca.</td><td>Muitas mensagens enquanto durar.</td></tr>
+  <tr><td>Serve para</td><td>Pedidos pontuais.</td><td>Subscrições e eventos.</td></tr>
+  <tr><td>Neste projeto</td><td>Verificação, scripts, sensor REST.</td><td>Ler a lista em tempo real.</td></tr>
 </table>
 
-<p>O prefixo é o único critério fiável: a instância tem outras listas
-(<code>todo.lista_de_compras</code>, <code>todo.compras</code>, do Bring) que <strong>não</strong>
-podem aparecer no cartão. Cada entidade declara <code>supported_features = 7</code> —
-criar (1) + apagar (2) + editar (4) — ou seja, <em>sem</em> reordenar (8) e <em>sem</em> descrição (64).
-O cartão esconde o que a entidade não sabe fazer em vez de mostrar botões que falham.</p>
+<p>O protocolo WebSocket do Home Assistant tem uma gramática própria, e é simples:
+<strong>cada mensagem leva um <code>id</code> e um <code>type</code></strong>. O <code>id</code> é
+o que permite ter vários pedidos em curso no mesmo canal sem os confundir.</p>
 
-<h2>4. Ler a lista — subscrição websocket</h2>
+<table>
+  <tr><th>Mensagem</th><th>Significado</th></tr>
+  <tr><td><code>{"type":"result","id":N,"success":true}</code></td><td>A resposta a uma mensagem nossa com o id N.</td></tr>
+  <tr><td><code>{"type":"event","id":N,"event":{…}}</code></td><td>Um evento de uma subscrição do id N. Não foi pedido: chegou por si.</td></tr>
+  <tr><td><code>{"type":"error","id":N,"error":{…}}</code></td><td>Falhou.</td></tr>
+</table>
 
-<p>Não há polling. O cartão abre uma subscrição por loja e recebe a lista sempre que ela muda.
-A subscrição <strong>também entrega imediatamente a lista inicial</strong>, por isso serve de
-primeiro carregamento:</p>
+<p>Eis a conversa verdadeira, capturada contra este servidor. <code>&lt;--</code> é o que o
+servidor enviou; <code>--&gt;</code> o que nós enviámos:</p>
 
-<pre><code>hass.connection.subscribeMessage(
-  (msg) =&gt; {
-    this._byEntity[entity_id] = msg.items || [];   // e.g. [{uid, summary, status}]
-    this._renderStores();                          // atualiza as contagens no seletor
-    this._render();                                // redesenha a lista visível
+<pre class="term"><code>&lt;-- {"type": "auth_required", "ha_version": "2026.11.0"}
+--&gt; {"type": "auth", "access_token": "…"}
+&lt;-- {"type": "auth_ok", "ha_version": "2026.11.0"}
+
+--&gt; {"id": 1, "type": "todo/item/subscribe", "entity_id": "todo.norish_unsorted"}
+&lt;-- {"id": 1, "type": "result", "success": true, "result": null}
+&lt;-- {"id": 1, "type": "event", "event": {"items": []}}
+     ^ push inicial: a subscrição serve de primeiro carregamento
+
+--&gt; {"id": 2, "type": "call_service", "domain": "todo", "service": "add_item",
+     "service_data": {"entity_id": "todo.norish_unsorted", "item": "TESTE websocket — apagar"}}
+&lt;-- {"id": 1, "type": "event", "event": {"items": [
+      {"summary": "TESTE websocket — apagar",
+       "uid": "6bdeb3fa-92ed-41bd-b5f5-c6681251c755",
+       "status": "needs_action", "due": null, "description": null, "completed": null}]}}
+     ^ CHEGOU SOZINHO: ninguém o pediu, a subscrição empurrou-o
+&lt;-- {"id": 2, "type": "result", "success": true, "result": {"context": {…}}}</code></pre>
+
+<p>Três observações que valem ouro:</p>
+
+<ul>
+  <li>A primeira mensagem é sempre <code>auth_required</code>: o servidor apresenta-se e exige
+      autenticação antes de qualquer outra coisa.</li>
+  <li>A subscrição devolve <code>result</code> <em>e logo a seguir</em> um <code>event</code> com
+      a lista atual. Não é preciso um pedido separado para carregar pela primeira vez — o push
+      inicial faz as duas coisas.</li>
+  <li>A mensagem com <code>id: 1</code> (o evento) chega <strong>antes</strong> da mensagem com
+      <code>id: 2</code> (o resultado do serviço). Num canal bidirecional, a ordem de chegada não
+      é a ordem de envio. <em>Quem escrever um cliente tem de filtrar por <code>id</code>, nunca
+      contar com a ordem</em> — foi exatamente este detalhe que partiu o meu primeiro guião
+      experimental.</li>
+</ul>
+
+<h2 id="p8"><span class="n">8</span>RPC: chamar funções pela rede</h2>
+
+<p>O HTTP+JSON pode ser usado de duas filosofias. No estilo <strong>REST</strong>, os endereços
+são <em>substantivos</em> (<code>/groceries/42</code>) e o método é o verbo. No estilo
+<strong>RPC</strong> (<em>remote procedure call</em>), chama-se uma <em>função</em> pelo nome e
+enviam-se argumentos — como uma chamada local, mas pela rede.</p>
+
+<p>O Norish usa os dois. A API pública <code>/api/v1</code> é REST. Já as operações que a própria
+aplicação usa são RPC, em <strong>tRPC</strong>, e o endereço é o <em>nome da função</em>:</p>
+
+<pre><code>/api/trpc/pantry.list
+/api/trpc/ingredients.find
+/api/trpc/groceries.toggle</code></pre>
+
+<p>O tRPC acrescenta dois pormenores. Escreve <code>batch=1</code> porque permite agrupar várias
+chamadas numa só mensagem — e isso importa quando a chave é verificada uma vez por pedido:</p>
+
+<pre><code>{"0": {"json": {"name": "leite"}}}      // chamada 0, com os seus argumentos</code></pre>
+
+<p>E como parâmetro de URL vai codificado (o <code>{"</code> não pode viajar cru):</p>
+
+<pre><code>/api/trpc/ingredients.find?batch=1&amp;input=%7B%220%22%3A%7B%22json%22%3A%7B%22name%22%3A%22leite%22%7D%7D%7D</code></pre>
+
+<div class="concept">
+  <span class="lbl">Conceito: o nome da função é a superfície</span>
+  Em RPC, saber o nome de uma função é metade do trabalho. É por isso que, quando uma capacidade
+  parece não existir, o caminho é ler o código do servidor à procura do <em>nome</em> — e não
+  concluir que não existe. Foi assim que apareceu <code>ingredients.find</code>, que o Norish usa
+  no seu próprio campo de compras e que não consta em lado nenhum da documentação pública.
+</div>
+
+<h2 id="p9"><span class="n">9</span>O Home Assistant por alto</h2>
+
+<p>Terminada a rede, entramos no segundo domínio. O Home Assistant tem duas metades muito
+diferentes:</p>
+
+<div class="grid two">
+  <div class="cardbox">
+    <h3 style="margin-top:0">Core — o servidor</h3>
+    <p>Programa em Python. Mantém o <em>estado</em> de tudo, executa automações, fala com os
+    dispositivos, expõe as APIs HTTP e WebSocket. É a memória e o cérebro.</p>
+  </div>
+  <div class="cardbox">
+    <h3 style="margin-top:0">Frontend — a interface</h3>
+    <p>Programa no browser. Desenha os dashboards e conversa com o core pelas APIs. Não guarda
+    estado próprio: o que mostra vem sempre do core.</p>
+  </div>
+</div>
+
+<p>Essa separação é a chave para entender o cartão. <strong>O cartão é frontend</strong>: não fala
+com dispositivos, não fala com o Norish, não tem memória. Todo o seu poder vem de <em>ler</em> o
+que o core lhe dá e <em>pedir</em> ao core para agir.</p>
+
+<div class="flow">
+  <div class="node ghost">Cartão<br><small>frontend, no browser</small></div>
+  <div class="arrow">&harr;</div>
+  <div class="node">Core<br><small>Python, o estado</small></div>
+  <div class="arrow">&harr;</div>
+  <div class="node">Integrações<br><small>falam com o mundo</small></div>
+</div>
+
+<h2 id="p10"><span class="n">10</span>A máquina de estados e as entidades</h2>
+
+<p>Tudo no Home Assistant gira à volta de uma única ideia: uma <strong>máquina de estados</strong>.
+Existe um objeto de estado por cada coisa que o sistema conhece, e existe um <strong>evento</strong>
+sempre que algo muda. Quem quiser saber, subscreve.</p>
+
+<p>A unidade é a <strong>entidade</strong>. O seu nome, o <code>entity_id</code>, tem sempre duas
+partes separadas por um ponto:</p>
+
+<pre><code>todo  .  norish_mercadona
+│        └── object_id: um nome único dentro do domínio
+└── domain: que TIPO de coisa é</code></pre>
+
+<p>Pode ler-se como «o domínio é o que ela sabe fazer, o object_id é qual delas é». O cartão
+seleciona as entidades que lhe interessam pelo domínio e pelo prefixo do object_id:</p>
+
+<pre><code>Object.keys(this._hass.states).filter((e) =&gt; e.startsWith("todo.norish_"))</code></pre>
+
+<p>Uma entidade tem duas partes de dados. O <strong>estado</strong> é uma <em>string</em> — sempre,
+mesmo quando parece um número — e é o valor principal. Os <strong>atributos</strong> são um
+dicionário com tudo o resto:</p>
+
+<div class="out">$ curl $HASS_URL/api/states/todo.norish_mercadona -H "Authorization: Bearer …"
+
+{
+  "entity_id": "todo.norish_mercadona",
+  "state": "0",
+  "attributes": {
+    "friendly_name": "Norish Mercadona",
+    "supported_features": 7
   },
-  { type: "todo/item/subscribe", entity_id }
-).then((unsub) =&gt; { this._unsubs[entity_id] = unsub; });</code></pre>
+  "last_changed": "2026-11-07T13:50:57.345602+00:00",
+  "last_updated": "2026-11-07T13:50:57.345602+00:00"
+}</div>
 
-<p>O cartão subscreve a <strong>todas</strong> as lojas ao mesmo tempo, não só à visível — é assim
-que o seletor mostra a contagem de itens ativos de cada loja em tempo real. Quando uma loja nova
-aparece (ou desaparece) na instância, a assinatura do conjunto de entidades muda e as subscrições
-são refeitas.</p>
+<p>Três leituras deste pequeno JSON:</p>
 
-<p>Forma de cada item no fio:</p>
+<ul>
+  <li><code>state: "0"</code> — numa lista de tarefas o estado é o <strong>número de itens por
+      fazer</strong>. É uma string por convenção do sistema, mas semanticamente um número.</li>
+  <li><code>friendly_name</code> — o nome legível, o que aparece no ecrã. O cartão mostra
+      <code>Mercadona</code> (limpa o prefixo «Norish ») e usa o <code>entity_id</code> para tudo
+      o resto.</li>
+  <li><code>supported_features: 7</code> — ver o capítulo 12. Guarde-se a ideia: uma entidade
+      <em>declara</em> o que sabe fazer.</li>
+</ul>
 
-<pre><code>{ "uid": "ac8bfdc4-f02f-4f7e-996b-d26d9b5bb2ea",
-  "summary": "2 kg batatas",
-  "status": "needs_action" }     // ou "completed"</code></pre>
+<div class="concept">
+  <span class="lbl">Conceito: estado observável</span>
+  Repare-se que os <strong>itens não estão aqui</strong>. O estado de uma entidade é uma string e
+  os atributos são pequenos. Uma lista de compras inteira não caberia neste modelo, e o HA
+  resolve isso com um mecanismo à parte: a subscrição de itens (capítulo 12). É este o motivo
+  pelo qual o cartão <em>precisa</em> do WebSocket e não se contenta com os atributos.
+</div>
 
-<h2>5. Escrever — os serviços to-do</h2>
+<p>Um último ponto que causa muita confusão: <code>entity_id</code> <strong>não</strong> é
+<code>unique_id</code>. O primeiro é o endereço no sistema (e pode ser renomeado pelo
+utilizador); o segundo é a identidade interna que a integração atribui (e é por ele que o
+histórico sobrevive a mudanças de nome).</p>
 
-<p>Cada funcionalidade mapeia diretamente num serviço do componente <code>todo</code>:</p>
+<h2 id="p11"><span class="n">11</span>Integrações: config entries e coordenadores</h2>
+
+<p>Uma <strong>integração</strong> é a peça que sabe falar com algo externo. No Home Assistant é
+uma pasta de Python, e uma regra vale a pena memorizar: <strong>o nome da pasta é o
+domínio</strong>.</p>
+
+<pre><code>custom_components/
+└── norish/
+    ├── manifest.json    ← a identidade: domain, versão, tipo
+    ├── config_flow.py   ← o formulário de configuração
+    ├── coordinator.py   ← quem pede os dados periodicamente
+    ├── todo.py          ← quem cria as entidades de lista
+    ├── sensor.py, calendar.py, …
+    └── translations/</code></pre>
+
+<p>O <code>manifest.json</code> do <code>hass-norish</code> diz muito sobre o seu comportamento:</p>
+
+<pre><code>{
+  "domain": "norish",
+  "config_flow": true,
+  "integration_type": "service",
+  "iot_class": "cloud_polling",     &lt;-- não é local, e é por polling
+  "version": "1.8.0"
+}</code></pre>
+
+<p>Quando o utilizador adiciona a integração, o HA cria uma <strong>config entry</strong>: o
+registo dessa configuração, com as credenciais e as opções. As entidades pertencem à config entry
+— e é por isso que apagar a config entry e voltar a criá-la perde o histórico, mesmo que o código
+seja o mesmo.</p>
+
+<p>Como <code>iot_class</code> diz que é <code>cloud_polling</code>, alguém tem de ir buscar os
+dados de tempos a tempos. Esse alguém é o <strong>coordenador</strong>
+(<code>DataUpdateCoordinator</code>), um padrão do HA que faz três coisas:</p>
+
+<ol>
+  <li><strong>Pede</strong> os dados numa cadência própria (no <code>hass-norish</code>, 15
+      minutos por omissão).</li>
+  <li><strong>Guarda</strong> o resultado numa cache, para que as entidades não tenham de pedir
+      nada quando alguém as lê.</li>
+  <li><strong>Avisa</strong> todas as entidades suas quando a cache muda — e as entidades, por sua
+      vez, avisam a máquina de estados, que avisa o WebSocket, que avisa o cartão.</li>
+</ol>
+
+<p>Vê-se aqui a cadeia completa de propagação de uma mudança:</p>
+
+<div class="flow">
+  <div class="node ghost">Norish<br><small>os dados mudam</small></div>
+  <div class="arrow">&rarr;<small>poll</small></div>
+  <div class="node">Coordenador<br><small>cache + cadência</small></div>
+  <div class="arrow">&rarr;</div>
+  <div class="node">Entidade<br><small>novo estado</small></div>
+  <div class="arrow">&rarr;</div>
+  <div class="node">Core<br><small>máquina de estados</small></div>
+  <div class="arrow">&rarr;<small>WebSocket</small></div>
+  <div class="node">Cartão<br><small>redesenha</small></div>
+</div>
+
+<div class="note">
+  <strong>Uma limitação do polling que se vê no cartão.</strong> Como a integração atualiza a cada
+  15 minutos, uma alteração feita noutro telefone pode demorar a aparecer. É por isso que o
+  <code>hass-norish</code> força um refresh imediato depois de cada escrita vinda do HA: a ação do
+  utilizador merece uma atualização pronta, não uma espera de 15 minutos.
+</div>
+
+<h2 id="p12"><span class="n">12</span>Plataformas: como nasce uma entidade <code>todo</code></h2>
+
+<p>Uma integração não cria entidades diretamente. Organiza-se em <strong>plataformas</strong> — uma
+por tipo de entidade. O <code>hass-norish</code> tem <code>todo.py</code>, <code>sensor.py</code>,
+<code>calendar.py</code>, <code>camera.py</code> e <code>media_player.py</code>. Cada ficheiro diz:
+«nas entidades deste tipo, eis as que eu crio».</p>
+
+<p>No <code>todo.py</code> a decisão tomada é: <strong>uma entidade por loja</strong>, mais uma para
+os itens sem loja. É daí que vêm as entidades do capítulo 10.</p>
+
+<pre><code>entities.append(NorishStoreList(coordinator, entry, store_id=None, store_name="Unsorted"))
+for store_id, store_name in stores.items():
+    entities.append(NorishStoreList(coordinator, entry,
+                                    store_id=store_id, store_name=store_name))</code></pre>
+
+<p>Dentro de cada entidade, a classe herda de <code>TodoListEntity</code> — a base que o HA fornece
+para listas de tarefas. Herdar dali dá o <code>entity_id</code>, o registo, o estado, tudo. A
+integração só preenche a parte específica:</p>
+
+<pre><code>class NorishStoreList(CoordinatorEntity, TodoListEntity):
+
+    @property
+    def todo_items(self) -&gt; list[TodoItem]:
+        """Os itens desta loja (ou os itens sem loja, se store_id for None)."""
+        groceries = self.coordinator.data.get("groceries", [])
+        if self.store_id is None:
+            filtered = [g for g in groceries if not g.get("storeId")]
+        else:
+            filtered = [g for g in groceries if g.get("storeId") == self.store_id]
+        return [_grocery_to_todo_item(g) for g in filtered]</code></pre>
+
+<p>E agora o capítulo 10 fica explicado. <strong>Os itens existem, mas não estão no estado.</strong>
+Vivem na <code>todo_items</code> da entidade, e chega-se a eles por um canal próprio — a
+subscrição:</p>
+
+<pre><code>hass.connection.subscribeMessage(cb, {type: "todo/item/subscribe", entity_id})</code></pre>
+
+<p>Do lado do servidor há um par correspondente, <code>async_subscribe_updates</code>: é a
+integração a inscrever-se para ser avisada quando os itens mudarem. Quando isso acontece, o
+servidor envia o <code>event</code> pelo WebSocket a todos os clientes inscritos. O cartão é apenas
+um desses clientes — o mesmo mecanismo que serve a página nativa de tarefas.</p>
+
+<p>Por fim, a entidade <strong>declara o que sabe fazer</strong>, através de uma máscara de bits em
+<code>supported_features</code>. É um conceito útil: em vez de o cliente adivinhar ou testar, o
+servidor diz. O valor <code>7</code> do capítulo 10 decompõe-se assim:</p>
+
+<table>
+  <tr><th>Bit</th><th>Valor</th><th>Significa</th><th>Este cartão</th></tr>
+  <tr><td><code>CREATE_TODO_ITEM</code></td><td>1</td><td>Saber adicionar itens</td><td>Sim — campo de adicionar</td></tr>
+  <tr><td><code>DELETE_TODO_ITEM</code></td><td>2</td><td>Saber apagar itens</td><td>Sim — botão ✕</td></tr>
+  <tr><td><code>UPDATE_TODO_ITEM</code></td><td>4</td><td>Saber editar itens</td><td>Sim — renomear e marcar</td></tr>
+  <tr><td><code>MOVE_TODO_ITEM</code></td><td>8</td><td>Saber reordenar</td><td><strong>Não</strong> — sem arrastar</td></tr>
+  <tr><td><code>SET_DUE_DATE_ON_ITEM</code></td><td>16</td><td>Saber datas-limite</td><td><strong>Não</strong></td></tr>
+  <tr><td><code>SET_DESCRIPTION_ON_ITEM</code></td><td>64</td><td>Saber descrições</td><td><strong>Não</strong></td></tr>
+</table>
+
+<p><code>1+2+4 = 7</code>. É por isso que o cartão não tem botão de arrastar: não é uma escolha de
+design, é a entidade que não oferece a capacidade. Um botão desses existiria para dar um erro — e
+uma limitação honesta é melhor que um botão que falha.</p>
+
+<div class="concept">
+  <span class="lbl">Conceito: o servidor declara, o cliente respeita</span>
+  Sempre que um cartão for feito sobre entidades existentes, o primeiro passo é ler
+  <code>supported_features</code> e desenhar a interface <em>depois</em>. Ao contrário, o resultado
+  são botões que parecem funcionar e devolvem erros.
+</div>
+
+<h2 id="p13"><span class="n">13</span>Serviços: a API de verbos</h2>
+
+<p>Ler o estado é passivo. Para <em>agir</em>, o HA tem os <strong>serviços</strong> — que a
+interface gráfica passou a chamar <em>ações</em>, mas que no código continuam <code>service</code>.
+Um serviço é uma operação nomeada, com dois níveis:</p>
+
+<pre><code>todo.add_item
+│     │
+│     └── o serviço (o verbo)
+└── o domínio (sobre o tipo de coisa)</code></pre>
+
+<p>A chamada leva três coisas: o domínio, o serviço e os dados — onde vai sempre o
+<code>entity_id</code> do alvo.</p>
+
+<pre><code>hass.callService(domain, service, data)
+
+hass.callService("todo", "update_item", {
+  entity_id: "todo.norish_mercadona",
+  item: "ac8bfdc4-…",          // o uid do item, não o texto
+  status: "completed",
+});</code></pre>
+
+<p>Note-se que <code>item</code> é o <strong>uid</strong>, não o texto visível. É a consequência
+natural do capítulo 2: identidades estáveis, não nomes. Dois itens podem chamar-se «leite»; só o
+uid distingue qual se está a marcar.</p>
+
+<p>O conjunto de serviços <code>todo</code> disponíveis é pequeno e cobre exatamente o CRUD que o
+cartão promete:</p>
 
 <table>
   <tr><th>Ação no cartão</th><th>Serviço</th><th>Dados</th></tr>
-  <tr><td>Adicionar item (Enter)</td><td><code>todo.add_item</code></td><td><code>{entity_id, item:"texto"}</code></td></tr>
+  <tr><td>Adicionar item</td><td><code>todo.add_item</code></td><td><code>{entity_id, item:"texto"}</code></td></tr>
   <tr><td>Marcar/desmarcar feita</td><td><code>todo.update_item</code></td><td><code>{entity_id, item:uid, status:"completed"|"needs_action"}</code></td></tr>
   <tr><td>Editar o texto</td><td><code>todo.update_item</code></td><td><code>{entity_id, item:uid, rename:"novo texto"}</code></td></tr>
   <tr><td>Apagar item</td><td><code>todo.remove_item</code></td><td><code>{entity_id, item:uid}</code></td></tr>
   <tr><td>Limpar concluídos</td><td><code>todo.remove_completed_items</code></td><td><code>{entity_id}</code></td></tr>
+  <tr><td>Ler os itens</td><td><code>todo.get_items</code></td><td><code>{entity_id}</code> — devolve dados</td></tr>
 </table>
 
-<p>Marcar e editar usam o <em>mesmo</em> serviço, mas o cartão envia-os em
-<strong>chamadas separadas</strong>:</p>
+<div class="note">
+  <strong>Porque é que o cartão é simples.</strong> Todo o CRUD já existe como serviço oficial. O
+  cartão não inventa protocolo nenhum: chama os verbos que o HA define e desenha o resultado. Metade
+  do trabalho de um cartão é saber que os verbos já existem.
+</div>
+
+<h2 id="p14"><span class="n">14</span>As duas APIs do HA: REST e WebSocket</h2>
+
+<p>O Home Assistant expõe as mesmas realidades por dois caminhos, e escolher entre eles é uma
+decisão de engenharia:</p>
+
+<table>
+  <tr><th></th><th>REST (<code>/api/…</code>)</th><th>WebSocket (<code>/api/websocket</code>)</th></tr>
+  <tr><td>Autenticação</td><td>Cabeçalho <code>Bearer</code> em cada pedido</td><td>Uma mensagem <code>auth</code>, uma vez, na abertura</td></tr>
+  <tr><td>Ler estado</td><td><code>GET /api/states/&lt;entity_id&gt;</code></td><td><code>{"type":"get_states"}</code></td></tr>
+  <tr><td>Chamar serviço</td><td><code>POST /api/services/&lt;domain&gt;/&lt;service&gt;</code></td><td><code>{"type":"call_service",…}</code></td></tr>
+  <tr><td>Receber mudanças</td><td><strong>Não dá</strong> (só polling)</td><td><code>subscribe</code> — chega por si</td></tr>
+  <tr><td>Ideal para</td><td>Scripts, testes, automações externas</td><td>Interfaces vivas, como este cartão</td></tr>
+</table>
+
+<p>É por isso que o cartão usa <em>ambos</em> consoante a necessidade: o WebSocket para ler (porque
+precisa de push) e, para escrever, <code>hass.callService</code> — que por baixo usa o mesmo canal.
+O REST fica para a verificação e para o sensor da despensa, porque um script de shell não tem sessão
+de browser. Exemplo real de leitura, sem tocar no cartão:</p>
+
+<pre class="term"><code>$ curl "$HASS_URL/api/states/todo.norish_unsorted" -H "Authorization: Bearer $HASS_TOKEN"
+{ "entity_id": "todo.norish_unsorted", "state": "0",
+  "attributes": { "friendly_name": "Norish Unsorted", "supported_features": 7 }, … }</code></pre>
+
+<h2 id="p15"><span class="n">15</span>Lovelace, dashboards e recursos</h2>
+
+<p>Um <strong>dashboard</strong> é, no fundo, uma lista de <strong>cartões</strong>. Cada cartão é
+uma caixa que sabe desenhar-se a si própria. Não há um «motor de layout» que entenda de compras: há
+caixas que se desenham.</p>
+
+<p>Para que um cartão exista, o frontend tem de carregar o seu código. Isso faz-se por
+<strong>recursos</strong> — ficheiros JavaScript registados na configuração do dashboard:</p>
+
+<table>
+  <tr><th>Campo</th><th>Valor para este cartão</th></tr>
+  <tr><td>URL</td><td><code>/hacsfiles/norish-shopping-card/norish-shopping-card.js</code></td></tr>
+  <tr><td>Tipo</td><td><code>module</code> (módulo ES)</td></tr>
+</table>
+
+<p>Duas notas de bastidores. O caminho <code>/hacsfiles/</code> é servido pelo <strong>HACS</strong>,
+uma integração cujo único trabalho é instalar e manter recursos de terceiros — não é magia, é um
+diretório servido pelo HA. E o <code>type: module</code> não é decoração: um módulo ES tem o seu
+próprio âmbito, o que permite ao cartão ser um ficheiro único e limpo em vez de variáveis globais
+espalhadas.</p>
+
+<h2 id="p16"><span class="n">16</span>Web Components: a linguagem dos cartões</h2>
+
+<p>Um cartão é um <strong>Web Component</strong> — uma capacidade que está no próprio browser, não
+numa biblioteca. Basta ensinar ao browser uma etiqueta nova:</p>
+
+<pre><code>class NorishShoppingCard extends HTMLElement {
+  …
+}
+
+customElements.define("norish-shopping-card", NorishShoppingCard);</code></pre>
+
+<p>A partir daí, <code>&lt;norish-shopping-card&gt;</code> é uma etiqueta HTML válida, tratada como
+qualquer <code>&lt;div&gt;</code>. Não há framework, não há passo de compilação, não há dependências:
+o browser sabe fazer isto.</p>
+
+<p>O segundo pilar é o <strong>shadow DOM</strong>. Cada componente pode ter uma árvore de elementos
+própria, isolada do resto da página:</p>
+
+<pre><code>this.attachShadow({ mode: "open" });
+this.shadowRoot.innerHTML = `&lt;style&gt;.card { … }&lt;/style&gt;&lt;div class="card"&gt;…&lt;/div&gt;`;</code></pre>
+
+<div class="concept">
+  <span class="lbl">Conceito: encapsulamento</span>
+  Sem shadow DOM, um <code>&lt;style&gt;</code> com <code>.card</code> dentro do cartão afetaria
+  todos os <code>.card</code> da página — e o CSS do dashboard afetaria o cartão. Com shadow DOM,
+  cada lado vive na sua bolha. É por isso que o cartão pode usar os nomes de classe que quiser sem
+  medo, e é por isso que há <em>dois</em> problemas separados: as cores têm de vir de variáveis de
+  tema (que atravessam o shadow DOM por serem propriedades CSS herdadas), enquanto tudo o resto
+  fica isolado.
+</div>
+
+<pre><code>.card {
+  background: var(--ha-card-background, var(--card-background-color, #fff));
+  color:      var(--primary-text-color, #212121);
+  border: 1px solid var(--divider-color, rgba(0,0,0,.12));
+}</code></pre>
+
+<p>Cada <code>var(…, fallback)</code> lê uma variável do tema do HA e usa o segundo valor se ela
+faltar. Resultado: o cartão acompanha o tema claro e o escuro sem uma linha de código a mais, e
+continua legível fora do HA — útil para a pré-visualização deste documento.</p>
+
+<h2 id="p17"><span class="n">17</span>O contrato de um cartão</h2>
+
+<p>Um cartão não é um programa que corre: é um objeto que o Home Assistant <em>conduz</em>. O HA
+chama três coisas, e a nossa parte é responder bem a elas.</p>
+
+<h4>1. O HA entrega a configuração — <code>setConfig</code></h4>
+
+<pre><code>setConfig(config) {
+  this._config = Object.assign(
+    { title: "Lista de compras", entities: null, warn_duplicates: true, pantry_entity: null },
+    config || {}
+  );
+  this._sig = null;   // invalida: o conjunto de entidades tem de ser redescoberto
+}</code></pre>
+
+<p>É aqui que se valida o YAML do utilizador. A regra prática: <em>falhar alto e cedo</em>. Uma
+opção com o tipo errado deve dar um erro claro agora, e não um comportamento estranho daqui a dez
+minutos.</p>
+
+<pre><code>if (config &amp;&amp; config.entities &amp;&amp; !Array.isArray(config.entities)) {
+  throw new Error("norish-shopping-card: 'entities' must be a list of todo entity ids");
+}</code></pre>
+
+<h4>2. O HA entrega o mundo — <code>set hass</code></h4>
+
+<p><code>hass</code> é o objeto por onde o cartão vê o Home Assistant inteiro. As quatro portas que
+este cartão usa:</p>
+
+<table>
+  <tr><th>Porta</th><th>O que dá</th><th>Usada para</th></tr>
+  <tr><td><code>hass.states</code></td><td>O dicionário de todas as entidades e estados</td><td>Descobrir as listas e ler o sensor da despensa</td></tr>
+  <tr><td><code>hass.callService(domain, service, data)</code></td><td>Executar um serviço</td><td>Adicionar, marcar, editar, apagar</td></tr>
+  <tr><td><code>hass.callWS(msg)</code></td><td>Uma mensagem WebSocket com resposta</td><td>Reler a lista como rede de segurança</td></tr>
+  <tr><td><code>hass.connection.subscribeMessage(cb, msg)</code></td><td>Uma subscrição contínua</td><td>Receber os itens em tempo real</td></tr>
+</table>
+
+<p>E aqui está a <strong>armadilha fundamental</strong> de escrever cartões: <code>set hass</code>
+<em>não</em> é chamado uma vez. É chamado a cada mudança de estado de qualquer entidade da instância
+— dezenas de vezes por minuto, sem aviso. Código ingénuo que reconstrói o HTML neste setter destrói
+a interface continuamente: os campos perdem o foco, o cursor salta, o toque perde-se.</p>
+
+<pre><code>set hass(hass) {
+  this._hass = hass;
+  if (!hass || !hass.states) return;
+  const ents = this._entities();
+  const sig = ents.join("|");       // a assinatura do conjunto de entidades
+  if (sig !== this._sig) {          // só reconstrói quando o CONJUNTO muda
+    this._sig = sig;
+    this._setup(ents);
+  }
+}</code></pre>
+
+<p>Guardar a referência a <code>hass</code> é sempre seguro. Reconstruir, só quando a lista de
+entidades muda — que no cartão significa: alguém criou uma loja nova.</p>
+
+<h4>3. O HA pergunta o tamanho — <code>getCardSize</code></h4>
+
+<pre><code>getCardSize() { return 8; }</code></pre>
+
+<p>É a dica para o layout estimar a altura antes de o cartão estar desenhado. É uma estimativa, não
+uma medida.</p>
+
+<h2 id="p18"><span class="n">18</span>Aparecer no seletor de cartões</h2>
+
+<p>Ao definir o elemento, o cartão passa a funcionar no YAML — mas ainda não aparece na lista visual
+de cartões. Para isso existe um registo simples:</p>
+
+<pre><code>window.customCards = window.customCards || [];
+window.customCards.push({
+  type: "norish-shopping-card",
+  name: "Norish Shopping Card",
+  description: "Lista de compras estilo Bring sobre as entidades to-do do Norish…",
+  documentationURL: "https://github.com/jdrdionisio/norish-shopping-card",
+});</code></pre>
+
+<p>O <code>|| []</code> não é ruído: vários cartões diferentes fazem o mesmo, e o primeiro a
+carregar pode encontrar a lista por criar.</p>
+
+<p>E há a peça que faz tudo funcionar em produção: o <strong>recurso</strong> tem de estar registado
+<em>uma vez</em>, e o caminho tem de existir. Um caminho errado não dá um erro útil — dá um cartão
+que nunca aparece e um aviso vago na consola. É o erro mais comum de quem instala um cartão, e não
+tem nada a ver com o código do cartão.</p>
+
+<h2 id="p19"><span class="n">19</span>A topologia completa deste cartão</h2>
+
+<p>Juntando os capítulos 1 a 18, eis o percurso de um único dedo a tocar no ecrã:</p>
+
+<div class="flow">
+  <div class="node ghost">Cartão<br><small>shadow DOM no browser</small></div>
+  <div class="arrow">&rarr;<small>callService</small></div>
+  <div class="node">Core HA<br><small>valida e despacha</small></div>
+  <div class="arrow">&rarr;<small>async_create_todo_item</small></div>
+  <div class="node">hass-norish<br><small>integração (Python)</small></div>
+  <div class="arrow">&rarr;<small>tRPC + x-api-key</small></div>
+  <div class="node">Norish<br><small>escreve na base de dados</small></div>
+</div>
+
+<p>E o regresso da confirmação, que é o que faz o item aparecer:</p>
+
+<div class="flow">
+  <div class="node ghost">Norish<br><small>gravou</small></div>
+  <div class="arrow">&rarr;<small>refresh</small></div>
+  <div class="node">Coordenador<br><small>nova cache</small></div>
+  <div class="arrow">&rarr;</div>
+  <div class="node">Entidade<br><small>avisa</small></div>
+  <div class="arrow">&rarr;<small>event</small></div>
+  <div class="node">Cartão<br><small>redesenha</small></div>
+</div>
+
+<p><strong>Quem guarda o quê</strong> — o quadro que resume a arquitetura:</p>
+
+<table>
+  <tr><th>Peça</th><th>Guarda</th><th>Confia em</th></tr>
+  <tr><td>Cartão (browser)</td><td>Nada de durável. Só a lista em memória.</td><td>Na sessão do HA que o browser já tem.</td></tr>
+  <tr><td>Core HA</td><td>Os estados, as config entries, o registo.</td><td>No token do utilizador.</td></tr>
+  <tr><td>hass-norish</td><td>A <strong>chave da API do Norish</strong>, em disco no servidor.</td><td>Na chave.</td></tr>
+  <tr><td>Norish</td><td>As listas, as lojas, o catálogo, a despensa.</td><td>Na chave de quem chama.</td></tr>
+</table>
+
+<p>Dito de outra forma: <strong>a chave da API nunca entra no browser</strong>. É essa propriedade — e
+não o contrário — que torna este cartão seguro.</p>
+
+<h2 id="p20"><span class="n">20</span>Ler: a subscrição, passo a passo</h2>
+
+<p>Cada passo, com o código ao lado da razão.</p>
+
+<h4>Passo 1 — Descobrir as entidades</h4>
+
+<pre><code>_entities() {
+  const configured = this._config.entities;
+  if (Array.isArray(configured) &amp;&amp; configured.length) {
+    return configured.filter((e) =&gt; this._hass.states[e]);   // o que o utilizador fixou
+  }
+  const all = Object.keys(this._hass.states).filter((e) =&gt; e.startsWith(PREFIX));
+  all.sort((a, b) =&gt; {
+    const ua = a === PREFIX + "unsorted" ? 0 : 1;
+    const ub = b === PREFIX + "unsorted" ? 0 : 1;
+    return ua - ub || this._name(a).localeCompare(this._name(b), "pt");
+  });
+  return all;
+}</code></pre>
+
+<p>O prefixo <code>todo.norish_</code> é o único critério fiável: a instância tem outras listas de
+tarefas (<code>todo.lista_de_compras</code>, <code>todo.compras</code>, do Bring) que não pertencem a
+este cartão. A ordenação força <em>Unsorted</em> em primeiro lugar e depois ordena por nome em
+português.</p>
+
+<h4>Passo 2 — Abrir a subscrição</h4>
+
+<pre><code>this._hass.connection.subscribeMessage(
+  (msg) =&gt; {
+    this._byEntity[e] = (msg &amp;&amp; msg.items) || [];
+    this._renderStores();     // as contagens do seletor
+    this._render();           // a lista visível
+  },
+  { type: "todo/item/subscribe", entity_id: e }
+);</code></pre>
+
+<p><code>subscribeMessage</code> devolve uma <em>promessa de função de cancelamento</em>. Chamar
+essa função fecha a subscrição — e é obrigatório fazê-lo, senão cada mudança de loja deixaria uma
+subscrição órfã a receber dados para uma lista que já ninguém vê.</p>
+
+<pre><code>Promise.resolve(p)
+  .then((unsub) =&gt; {
+    if (this._pending[e]) this._unsubs[e] = unsub;
+    else if (typeof unsub === "function") unsub();   // já não interessava
+  })</code></pre>
+
+<p>Este cuidado — cancelar o que entretanto deixou de interessar — é o que evita a fuga de
+subscrições, o defeito clássico de interfaces vivas.</p>
+
+<h4>Passo 3 — O push faz o trabalho</h4>
+
+<p>Depois disto não há polling nenhum. Quando alguém marca um item no telefone, o Norish muda, o
+coordenador dá por isso, a entidade avisa, o HA envia um <code>event</code>, e a função acima corre.
+O cartão não perguntou nada.</p>
+
+<h4>Passo 4 — Uma rede de segurança, porque o mundo real atrasa</h4>
+
+<pre><code>_refreshAfterMutation() {
+  for (const delay of [500, 1600]) {
+    window.setTimeout(() =&gt; {
+      … this._hass.callWS({ type: "todo/item/list", entity_id: e }) …
+    }, delay);
+  }
+}</code></pre>
+
+<p>A integração força um refresh depois de cada escrita, mas essa viagem tem várias etapas. Este
+reler tardio — duas vezes, a meio segundo e a segundo e meio — é a admissão de que <em>o push pode
+atrasar</em> e de que o ecrã não deve ficar dessincronizado por isso. Duas tentativas porque uma só
+falha nos casos lentos, e mais do que duas é ruído.</p>
+
+<h2 id="p21"><span class="n">21</span>Escrever: serviços, e uma armadilha real</h2>
+
+<p>As escritas usam os verbos do capítulo 13. Mas há um detalhe que só se descobre a testar, e que
+justifica uma decisão que à primeira vista parecia estranha.</p>
+
+<p>Marcar e editar usam o <em>mesmo</em> serviço, <code>todo.update_item</code> — um com
+<code>status</code>, outro com <code>rename</code>. A tentação é juntar os dois numa só chamada. Eis
+o que aconteceu quando o testei:</p>
+
+<pre class="term"><code>$ curl -X POST "$HASS_URL/api/services/todo/update_item" … \
+   -d '{"entity_id":"todo.norish_unsorted","item":"ac8bfdc4-…",
+        "rename":"TESTE — renomeado","status":"completed"}'
+
+HTTP 200
+
+$ curl -X POST "$HASS_URL/api/services/todo/get_items?return_response" … 
+{ "summary": "TESTE — renomeado", "uid": "ac8bfdc4-…",
+  "status": "needs_action" }            <strong>&lt;-- o status NÃO mudou</strong></code></pre>
+
+<p>Um <code>200</code> impecável, o nome alterado, e o estado intacto. Na integração, a lógica aplica
+o <code>rename</code> e depois compara o estado — mas a leitura do item anterior já não corresponde
+ao que acabou de ser escrito, e o <code>toggle</code> perde-se. O utilizador veria o item renomeado e
+por marcar.</p>
+
+<p>A solução é o que o cartão faz: <strong>uma chamada por intenção</strong>.</p>
 
 <pre><code>_toggle(uid, checked) {
   this._hass.callService("todo", "update_item", {
@@ -213,168 +1038,343 @@ _commitEdit(uid, texto) {
   });
 }</code></pre>
 
-<div class="note">
-  <strong>Porquê separadas:</strong> na hass-norish, uma única chamada com
-  <code>rename</code> e <code>status</code> ao mesmo tempo responde HTTP 200 mas só aplica o
-  <code>rename</code> — o <code>status</code> fica no valor antigo. Enviar as duas operações em
-  chamadas distintas é correto em qualquer integração e evita o problema.
+<div class="concept">
+  <span class="lbl">Conceito: uma intenção, uma chamada</span>
+  Uma chamada = uma intenção = um resultado verificável. Juntar duas alterações independentes num só
+  pedido cria uma transação implícita que o servidor pode não honrar, e um <code>200</code> deixa de
+  significar «está feito». Separar é mais pedidos e muito menos mistério — e é <em>mais correto</em>
+  em qualquer integração, não só nesta.
 </div>
 
-<h2>6. Renderização e reatividade</h2>
+<h2 id="p22"><span class="n">22</span>O modelo de renderização</h2>
 
-<p>Três decisões explicam o comportamento do cartão:</p>
+<p>Três decisões explicam todo o comportamento visual do cartão.</p>
 
-<h3>O <code>set hass</code> dispara a cada mudança de estado</h3>
-<p>Num HA real isso acontece dezenas de vezes por minuto. Por isso o cartão <strong>nunca</strong>
-reconstrói o shadow DOM nesse setter: só reconstrói quando o <em>conjunto</em> de entidades muda
-(comparado por assinatura), e redesenha a lista apenas quando chega um push da subscrição.</p>
-
-<h3>O campo de adicionar vive fora da parte redesenhada</h3>
-<p>É o que permite escrever um item enquanto chegam atualizações sem perder o foco nem o cursor.</p>
+<h4>O esqueleto constrói-se uma vez; a lista redesenha-se muitas</h4>
 
 <pre><code>&lt;div class="card"&gt;
-  &lt;div class="head"&gt;   título + seletor de loja   &lt;/div&gt;
-  &lt;div class="add"&gt;    &lt;input&gt; + botão +          &lt;/div&gt;   &lt;-- nunca redesenhado
-  &lt;div class="list"&gt;   itens ativos               &lt;/div&gt;   &lt;-- redesenhado a cada push
-  ...
+  &lt;div class="head"&gt;    título + seletor de loja          &lt;/div&gt;
+  &lt;div class="add"&gt;     &lt;input&gt; + botão +                 &lt;/div&gt;   ← nunca redesenhado
+  &lt;div class="warn"&gt;    aviso de duplicados               &lt;/div&gt;
+  &lt;div class="list"&gt;    itens ativos                       &lt;/div&gt;   ← redesenhado a cada push
+  &lt;div class="donebar"&gt; mostrar concluídos · limpar        &lt;/div&gt;
+  &lt;div class="done"&gt;    itens concluídos                   &lt;/div&gt;
 &lt;/div&gt;</code></pre>
 
-<h3>Rede de segurança após cada escrita</h3>
-<p>A integração refresca o coordenador depois de cada mutação, mas essa ida-e-volta pode demorar.
-O cartão relê a lista via <code>todo/item/list</code> aos ~0,5 s e ~1,6 s, para o ecrã assentar
-mesmo que um push se perca.</p>
+<p>O campo de texto vive <em>fora</em> da zona redesenhada. É o que permite escrever um item enquanto
+chegam atualizações, sem perder o foco nem o cursor. É uma decisão de arquitetura com consequências
+imediatas para quem usa.</p>
 
-<p>Os eventos são tratados por delegação nos contentores da lista (um <code>change</code> para as
-caixas, <code>click</code> para apagar/editar, <code>keydown</code>+<code>focusout</code> para o
-nome), em vez de religar ouvintes a cada redesenho. As cores vêm todas de variáveis de tema do HA
-(<code>--primary-color</code>, <code>--card-background-color</code>, <code>--divider-color</code>…),
-por isso o cartão acompanha o tema claro ou escuro.</p>
+<h4>Eventos delegados, não religados</h4>
 
-<h2>7. Funcionalidades, uma a uma</h2>
+<pre><code>for (const host of [this.$.list, this.$.doneList]) {
+  host.addEventListener("change", (ev) =&gt; {
+    const chk = ev.target.closest("input.chk");
+    if (chk) this._toggle(chk.dataset.uid, chk.checked);
+  });
+  host.addEventListener("click", (ev) =&gt; {
+    const del = ev.target.closest("button.del");
+    if (del) { this._remove(del.dataset.uid); return; }
+    const sum = ev.target.closest(".summary");
+    if (sum) this._startEdit(sum.dataset.uid);
+  });
+}</code></pre>
 
-<div class="grid two">
-  <div class="cardbox">
-    <h3 style="margin-top:0">Adicionar</h3>
-    <p>Escrever e premi <span class="kbd">Enter</span> (ou o botão <strong>+</strong>). O campo
-    limpa-se de imediato e o item aparece quando o push chega. O Norish volta a interpretar o
-    texto, por isso <code>2 kg batatas</code> pode voltar normalizado.</p>
-  </div>
-  <div class="cardbox">
-    <h3 style="margin-top:0">Marcar feita</h3>
-    <p>A caixa envia <code>status</code>. O item sai da lista ativa e entra na secção
-    <em>concluídos</em>, riscado.</p>
-  </div>
-  <div class="cardbox">
-    <h3 style="margin-top:0">Editar</h3>
-    <p>Tocar no texto transforma-o num campo editável. <span class="kbd">Enter</span> grava,
-    <span class="kbd">Esc</span> cancela, sair do campo também grava.</p>
-  </div>
-  <div class="cardbox">
-    <h3 style="margin-top:0">Apagar</h3>
-    <p>O <strong>&#10005;</strong> remove o item pelo <code>uid</code>.</p>
-  </div>
-  <div class="cardbox">
-    <h3 style="margin-top:0">Limpar concluídos</h3>
-    <p>Um serviço para toda a lista, em vez de N remoções.</p>
-  </div>
-  <div class="cardbox">
-    <h3 style="margin-top:0">Seletor com contagens</h3>
-    <p>Cada opção mostra os itens ativos dessa loja, ex. <em>Mercadona (3)</em>. <em>Unsorted</em>
-    aparece sempre primeiro.</p>
-  </div>
+<p>Dois ouvintes no contentor, para todos os itens que existam agora e no futuro. Se a lista se
+redesenha, os ouvintes continuam válidos — não é preciso religar nada a cada renderização. Sem isto,
+cada push deixaria os botões mortos.</p>
+
+<h4>Estado de edição por identidade, não por índice</h4>
+
+<p>Ao entrar em edição, o cartão guarda o <strong>uid</strong> do item a editar. Depois de redesenhar,
+procura esse uid e devolve-lhe o foco:</p>
+
+<pre><code>if (this._editing) {
+  const inp = this.shadowRoot.querySelector(
+    `input.edit[data-uid="${CSS.escape(this._editing)}"]`
+  );
+  if (inp) {
+    inp.focus();
+    inp.setSelectionRange(inp.value.length, inp.value.length);
+  } else {
+    this._editing = null;      // o item desapareceu entretanto
+  }
+}</code></pre>
+
+<p>Guardar a posição («linha 3») seria frágil: basta um push para a lista mudar de ordem e o foco
+aterrar no item errado. Guardar a identidade é estável — a mesma ideia do uid no capítulo 2, a
+reaparecer nove capítulos depois.</p>
+
+<h2 id="p23"><span class="n">23</span>Deteção de duplicados</h2>
+
+<p>O objetivo é avisar antes de criar algo que já existe. A dificuldade é que «existir» não é uma
+igualdade de texto: «2 kg batatas» e «batatas» são a mesma coisa, «ovo» e «Ovos» também, e
+«leitinho» não é «leite».</p>
+
+<h4>Normalizar antes de comparar</h4>
+
+<pre><code>_norm(s) {
+  return String(s)
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")   // remove acentos (água → agua)
+    .toLowerCase()
+    .replace(/([0-9])([a-z])/g, "$1 $2")                // 2kg → 2 kg
+    .replace(/[^a-z0-9]+/g, " ")                        // pontuação fora
+    .trim();
+}
+
+_core(s) {                       // e depois o que é comum a todas as escritas
+  const toks = this._norm(s).split(" ").filter(Boolean);
+  while (toks.length &gt; 1 &amp;&amp;
+         (/^\d+([.,]\d+)?$/.test(toks[0]) || LEAD_NOISE.has(toks[0]))) {
+    toks.shift();                // deita fora "2", "kg", "de", "l", "pacote"…
+  }
+  return toks.join(" ");
+}</code></pre>
+
+<p>O conjunto <code>LEAD_NOISE</code> tem de conter unidades em português <em>e</em> em inglês —
+porque o Norish normaliza unidades para inglês ao gravar (<code>fatias</code> torna-se
+<code>slice</code>). Esquecer isto deixa metade das comparações a falhar.</p>
+
+<pre class="term"><code>_norm("1,5 l Água")   → "1 5 l agua"
+_core("1,5 l Água")   → "agua"          quantidade e unidade caem
+_core("2kg batatas")  → "batatas"       "2kg" separa-se em "2 kg"</code></pre>
+
+<h4>Comparar em degraus, do certo ao tolerante</h4>
+
+<pre><code>_matches(q, key) {
+  // singular grosseiro (plural em -s), para "ovo" encontrar "Ovos"
+  const sing = (w) =&gt; (w.length &gt;= 4 &amp;&amp; w.endsWith("s") ? w.slice(0, -1) : w);
+  const qw = q.split(" ").map(sing);
+  const kw = key.split(" ").map(sing);
+  const qs = qw.join(" ");
+  const ks = kw.join(" ");
+
+  if (qs === ks) return true;                        // igual
+  if (kw.includes(qs) || qw.includes(ks)) return true;  // palavra inteira
+  if (qs.length &gt;= 4 &amp;&amp; (ks.startsWith(qs + " ") || qs.startsWith(ks + " "))) return true;
+  const setK = new Set(kw), setQ = new Set(qw);
+  const subset = (a, b) =&gt; a.length &gt; 0 &amp;&amp; a.every((t) =&gt; t.length &gt;= 2 &amp;&amp; b.has(t));
+  return subset(qw, setK) || subset(kw, setQ);       // todas as palavras de um lado
+}</code></pre>
+
+<p>Resultados reais do testador, sobre uma lista com «Leite meio-gordo», «2 kg batatas», «Azeite» e
+«Ovos»:</p>
+
+<pre class="term"><code>"leite"          → Leite meio-gordo   (Unsorted)
+"LEITE MEIO GORDO" → Leite meio-gordo
+"leite gordo"    → Leite meio-gordo   (subconjunto de palavras)
+"ovo"            → Ovos               (singular/plural)
+"2kg batatas"    → 2 kg batatas       (Lidl)
+"batatas"        → 2 kg batatas       (Lidl)
+"azeite virgem"  → Azeite             (Lidl)
+"leitinho"       → (nada)             sem falso positivo
+"cebola"         → (nada)</code></pre>
+
+<div class="concept">
+  <span class="lbl">Conceito: precisão contra cobertura</span>
+  Cada regra acrescentada aumenta a cobertura e arrisca falsos positivos. Um aviso de duplicados
+  <em>ruidoso</em> é pior que nenhum: o utilizador aprende a ignorá-lo. Por isso o mínimo de três
+  caracteres, o mínimo de duas letras por palavra, e a preferência por não avisar em vez de avisar
+  errado — e por isso também nunca bloqueia: um segundo «leite» é, às vezes, exatamente o que se quer.
 </div>
 
-<h2>8. Configuração</h2>
+<h2 id="p24"><span class="n">24</span>A despensa, e uma correção importante</h2>
 
-<pre><code># mínimo — descobre todas as listas sozinho
-type: custom:norish-shopping-card
-title: Lista de compras
+<p>A segunda verificação é contra a <strong>despensa</strong> do Norish — o «que temos em casa». Aqui
+houve duas descobertas que mudam o que se deve dizer sobre este cartão.</p>
 
-# opcional — fixar listas e ordem
-type: custom:norish-shopping-card
-title: Compras da semana
-entities:
-  - todo.norish_unsorted
-  - todo.norish_mercadona
-  - todo.norish_continente</code></pre>
+<h4>Descoberta 1 — o Norish já funde duplicados</h4>
+
+<p>Fui verificar, adicionando deliberadamente o mesmo item duas vezes:</p>
+
+<pre class="term"><code>add 'TESTE merge — apagar'   → HTTP 200
+  [{"summary": "TESTE merge — apagar", "uid": "1e0fe2c6-…", "status": "needs_action"}]
+
+add 'TESTE merge — apagar'   → HTTP 200
+  [{"summary": "2× TESTE merge — apagar", "uid": "1e0fe2c6-…", "status": "needs_action"}]
+                <strong>↑ mesmo uid, quantidade somada — não nasceu uma linha nova</strong>
+
+add '2 kg TESTE merge — apagar'
+  [{"summary": "2 kg TESTE merge — apagar", "uid": "015e5f23-…"},
+   {"summary": "2× TESTE merge — apagar",   "uid": "1e0fe2c6-…"}]
+                <strong>↑ com quantidade explícita, aí sim é um item distinto</strong></code></pre>
+
+<div class="note good">
+  <strong>Correção ao que este documento dizia antes.</strong> A preocupação de «criar itens que já
+  existem» está, em grande parte, já resolvida <em>pelo próprio Norish</em>: adicionar um nome
+  repetido não cria uma linha duplicada — incrementa a quantidade no item existente («2×»), mantendo
+  o mesmo uid. O aviso do cartão passa a ser, por isso, sobre <strong>consciência</strong> — saber
+  antes de carregar em Enter, em vez de descobrir depois — em vez de sobre impedir uma duplicação que
+  o servidor já evita.
+</div>
+
+<h4>Descoberta 2 — a despensa existe, mas não está no Home Assistant</h4>
+
+<p>No tRPC do Norish existem procedimentos que o <code>/api/v1</code> público não expõe, e a chave da
+API autentica lá. Verificados contra este servidor, todos <code>200</code>:</p>
 
 <table>
-  <tr><th>Opção</th><th>Tipo</th><th>Por omissão</th><th>Descrição</th></tr>
-  <tr><td><code>title</code></td><td>string</td><td>Lista de compras</td><td>Título no cabeçalho.</td></tr>
-  <tr><td><code>entities</code></td><td>lista de ids</td><td>auto</td><td>Entidades <code>todo.norish_*</code> a mostrar, e a ordem.</td></tr>
+  <tr><th>Procedimento</th><th>O que devolve</th></tr>
+  <tr><td><code>ingredients.find</code></td><td>nome → <code>ingredientId</code>, ou <code>null</code>. É o que o próprio Norish usa no campo das compras enquanto se escreve.</td></tr>
+  <tr><td><code>ingredients.list</code></td><td>pesquisa paginada no catálogo (nomes, aliases, traduções).</td></tr>
+  <tr><td><code>pantry.list</code></td><td>a despensa da família — 35 itens neste caso.</td></tr>
+  <tr><td><code>pantry.suggestions</code></td><td>alimentos usados pelas receitas que a despensa não cobre.</td></tr>
 </table>
 
-<h2>9. Limitações conhecidas</h2>
+<div class="out">GET /api/trpc/ingredients.find?batch=1&amp;input=…{"name":"leite"}  → HTTP 200
+{"ingredientId":"dda78de0-ee0f-4c4e-aa05-14a6949ccd6d"}
+
+o mesmo com "mareleite"                                          → HTTP 200
+<strong>null</strong>
+
+GET /api/trpc/pantry.list                                        → HTTP 200
+{"name":"butter",      "localeNames":{"pt":"manteiga"}}
+{"name":"carrot",      "localeNames":{"pt":"cenoura"}}
+{"name":"breadcrumbs", "localeNames":{"pt":"pão ralado"}}</div>
+
+<p>O cartão não pode chamar isto (capítulo 5), e por isso os dados têm de entrar pelo servidor. A
+ponte é um sensor REST no <code>configuration.yaml</code>: o Home Assistant vai buscar a despensa, a
+chave fica no <code>secrets.yaml</code>, e o cartão limita-se a ler o atributo.</p>
+
+<pre><code>rest:
+  - resource: "https://norish.jdrdionisio.com/api/trpc/pantry.list?batch=1&amp;input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D"
+    headers:
+      x-api-key: !secret norish_api_key
+    scan_interval: 1800            # 30 min: a despensa muda pouco, e há um limite de 500 pedidos/h
+    sensor:
+      - name: "Norish Pantry"
+        value_template: "{{ value_json[0].result.data.json | length }}"
+        json_attributes_path: "$[0].result.data.json"
+        json_attributes: [name, localeNames]</code></pre>
+
+<p>E no cartão basta apontar para ele:</p>
+
+<pre><code>type: custom:norish-shopping-card
+title: Lista de compras
+pantry_entity: sensor.norish_pantry</code></pre>
+
+<p>Um pormenor que parece um detalhe e não é: a despensa guarda nomes em inglês com traduções. A
+correspondência tem de usar <code>localeNames.pt</code>, senão «manteiga» nunca encontra «butter».</p>
+
+<h2 id="p25"><span class="n">25</span>Limitações</h2>
 
 <ul>
-  <li><strong>Criar lojas não é possível pelo cartão.</strong> As lojas vivem na app Norish; a
-      integração só as descobre. O cartão faz CRUD de <em>itens</em>, nunca de listas.</li>
-  <li><strong>Sem arrastar para reordenar.</strong> A entidade não expõe
-      <code>MOVE_TODO_ITEM</code>, por isso a função não existe.</li>
-  <li><strong>Sem imagens, por opção.</strong> O cartão é só texto.</li>
-  <li><strong>O texto pode voltar alterado.</strong> O servidor Norish reanalisa quantidade e
-      unidade ao gravar.</li>
+  <li><strong>Criar lojas não é possível pelo cartão.</strong> As lojas são listas no Norish, geridas
+      na aplicação; a integração só as descobre. O cartão faz CRUD de <em>itens</em>. Não é uma falha
+      do cartão: é onde a fronteira está.</li>
+  <li><strong>Sem arrastar para reordenar.</strong> A entidade não declara
+      <code>MOVE_TODO_ITEM</code> (capítulo 12).</li>
+  <li><strong>A atualização depende de três saltos.</strong> Norish → coordenador → entidade →
+      WebSocket → cartão. O refresh forçado após escrita encurta-o, mas não o elimina.</li>
+  <li><strong>O texto pode voltar alterado.</strong> O servidor Norish reanalisa quantidade e unidade
+      ao gravar: escrever «2 kg batatas» pode devolver «2× batatas».</li>
+  <li><strong>A chave da API tem quota.</strong> 500 pedidos por hora, e a chave é <em>desativada</em>
+      ao exceder, respondendo <code>401</code> como se fosse inválida — o que torna o erro enganador.
+      Nada no cartão consome quota (usa o HA), mas uma pesquisa por tecla contra o Norish esgotaria a
+      quota em minutos; daí o intervalo de 30 minutos no sensor.</li>
+  <li><strong>Sem imagens, por opção.</strong></li>
 </ul>
 
-<h2>10. Demonstração ao vivo</h2>
+<h2 id="p26"><span class="n">26</span>Demonstração ao vivo</h2>
 
-<p>Abaixo corre o <em>próprio</em> ficheiro do cartão (<code>norish-shopping-card.js</code>), com um
-<code>hass</code> simulado em memória — sem Home Assistant, sem rede. Experimenta adicionar, marcar,
-editar e apagar: as operações são registadas em baixo em vez de enviadas para o servidor.</p>
+<p>Abaixo corre o <em>próprio</em> ficheiro do cartão, com um <code>hass</code> simulado em memória:
+sem Home Assistant, sem rede, sem Norish. Tudo o que os capítulos 15 a 23 descrevem está a acontecer
+aqui dentro.</p>
+
+<p>Experimenta:</p>
+<ol>
+  <li>Escrever <strong>leite</strong> no campo — aparece o aviso de item já na lista.</li>
+  <li>Escrever <strong>manteiga</strong> — aparece o aviso da despensa (sensor simulado).</li>
+  <li>Premir <span class="kbd">Enter</span> e ver a chamada registada em baixo, como
+      <code>callService todo.add_item</code>.</li>
+  <li>Marcar uma caixa, tocar num texto para editar, apagar com o ✕, e limpar concluídos.</li>
+</ol>
 
 <div class="demo" id="demo"><noscript>Precisa de JavaScript.</noscript></div>
-<div class="out" id="log">(as chamadas de serviço aparecem aqui)</div>
-
+<div class="out" id="log">(as chamadas de serviço e os pedidos de subscrição aparecem aqui)</div>
 <p id="demofail" style="display:none;color:#db4437">
   Não foi possível carregar <code>../norish-shopping-card.js</code> — abre esta página a partir da
   pasta <code>docs/</code> do repositório.
 </p>
 
-<h2>11. Verificação na instância real</h2>
+<h2 id="p27"><span class="n">27</span>Verificação na instância real</h2>
 
-<p>Antes de publicar, o caminho de dados foi exercitado contra o HA do utilizador (2026.11.0), com um
-item descartável que foi apagado no fim. Saídas reais:</p>
+<p>Antes de publicar, todo o caminho de dados foi exercitado contra o Home Assistant do autor
+(2026.11.0), com itens descartáveis removidos no fim. As saídas acima vêm daqui.</p>
 
-<h3>Adicionar, ler a forma do item, editar, marcar, apagar</h3>
-<pre><code>POST /api/services/todo/add_item            -> HTTP 200
-POST /api/services/todo/get_items?return_response
-POST /api/services/todo/update_item (rename)  -> HTTP 200
-POST /api/services/todo/update_item (status)  -> HTTP 200
-POST /api/services/todo/remove_completed_items -> HTTP 200
-POST /api/services/todo/remove_item           -> HTTP 200</code></pre>
+<h3>HTTP — os serviços</h3>
+<div class="out">POST /api/services/todo/add_item                    → HTTP 200
+POST /api/services/todo/get_items?return_response     → HTTP 200
+POST /api/services/todo/update_item   (só rename)     → HTTP 200
+POST /api/services/todo/update_item   (só status)     → HTTP 200
+POST /api/services/todo/update_item   (rename+status) → HTTP 200  <strong>mas o status não mudou</strong>
+POST /api/services/todo/remove_completed_items        → HTTP 200
+POST /api/services/todo/remove_item                   → HTTP 200
+GET  /api/states/todo.norish_mercadona                → HTTP 200</div>
 
-<div class="out">{
-  "service_response": {
-    "todo.norish_unsorted": {
-      "items": [
-        {
-          "summary": "TESTE cartao — renomeado",
-          "uid": "ac8bfdc4-f02f-4f7e-996b-d26d9b5bb2ea",
-          "status": "completed"
-        }
-      ]
-    }
-  }
-}
-<strong>lista final: items: []</strong>   (item de teste removido)</div>
+<h3>WebSocket — a subscrição e o push</h3>
+<p>A transcrição do capítulo 7: autenticação, subscrição, push inicial, escrita, e o
+<code>event</code> a chegar sozinho. Confirmado também o que quebra um cliente ingénuo — a mensagem
+do evento (<code>id: 1</code>) chegou <em>antes</em> do resultado do serviço (<code>id: 2</code>).</p>
 
-<div class="note ok">
-  <strong>O que ficou provado:</strong> os nomes dos serviços, a forma
-  <code>{summary, uid, status}</code>, o rename, o toggle, as remoções e o estado final limpo. E
-  também o caso combinado: uma só chamada com <code>rename</code>+<code>status</code> devolve 200 e
-  deixa o <code>status</code> em <code>needs_action</code> — daí as chamadas separadas no cartão.
-</div>
+<h3>Norish — os procedimentos que expõem a despensa</h3>
+<div class="out">OPTIONS /api/trpc/pantry.list  (Origin: https://homeassistant…)   → HTTP 204
+<strong>sem nenhum cabeçalho Access-Control-*</strong>
 
-<h3>Validação do repositório (HACS)</h3>
+GET /api/trpc/pantry.list?batch=1&amp;input=…                                    → HTTP 200
+GET /api/trpc/ingredients.find?batch=1&amp;input=…{"name":"leite"}               → HTTP 200
+GET /api/trpc/ingredients.find?batch=1&amp;input=…{"name":"mareleite"}          → HTTP 200 → null
+GET /api/trpc/pantry.suggestions?batch=1&amp;input=…                            → HTTP 200</div>
+
+<h3>Repositório — a validação do HACS</h3>
 <div class="out">&lt;Validation topics&gt;   completed
 &lt;Validation images&gt;   completed
 &lt;Validation hacsjson&gt; completed
 &lt;Plugin jdrdionisio/norish-shopping-card&gt; Validation completed   <strong>8/8</strong></div>
 
+<div class="note good">
+  <strong>O que ficou provado:</strong> os nomes dos serviços e a forma
+  <code>{summary, uid, status}</code>; o rename e o toggle a funcionar <em>em separado</em> e a falhar
+  em conjunto; o mecanismo de push a entregar sozinho, incluindo o push inicial; a ordem de mensagens
+  fora de ordem no WebSocket; a recusa de CORS; e a fusão de duplicados pelo Norish.
+</div>
+
+<h2 id="p28"><span class="n">28</span>Glossário</h2>
+
+<table>
+  <tr><th>Termo</th><th>Em uma linha</th></tr>
+  <tr><td><strong>HTTP</strong></td><td>Protocolo de pedido-resposta da Web. Cliente pergunta, servidor responde, fim.</td></tr>
+  <tr><td><strong>WebSocket</strong></td><td>Canal bidirecional aberto, que começa como um pedido HTTP e deixa de o ser.</td></tr>
+  <tr><td><strong>TLS</strong></td><td>A camada que cifra e autentica o canal. O «S» de HTTPS.</td></tr>
+  <tr><td><strong>DNS</strong></td><td>Traduz um nome de máquina num endereço IP.</td></tr>
+  <tr><td><strong>Proxy inversa</strong></td><td>Servidor à frente de outro; representa-o perante os clientes.</td></tr>
+  <tr><td><strong>Origem</strong></td><td>Trio esquema+máquina+porta. Comparado textualmente.</td></tr>
+  <tr><td><strong>CORS</strong></td><td>O mecanismo pelo qual um servidor autoriza outra origem a ler as suas respostas.</td></tr>
+  <tr><td><strong>Preflight</strong></td><td>O <code>OPTIONS</code> que o browser envia antes de um pedido «não simples».</td></tr>
+  <tr><td><strong>Polling / push</strong></td><td>Perguntar sempre / ser avisado quando muda.</td></tr>
+  <tr><td><strong>RPC</strong></td><td>Chamar funções pelo nome através da rede. O tRPC do Norish.</td></tr>
+  <tr><td><strong>Entidade</strong></td><td>A unidade de estado do HA: <code>domain.object_id</code>, um estado (string) e atributos.</td></tr>
+  <tr><td><strong>Máquina de estados</strong></td><td>O core do HA: um valor por entidade, e um evento a cada mudança.</td></tr>
+  <tr><td><strong>Integração</strong></td><td>A peça que fala com algo externo. Uma pasta em <code>custom_components/</code>; a pasta é o domínio.</td></tr>
+  <tr><td><strong>Config entry</strong></td><td>O registo da configuração de uma integração. As entidades pertencem-lhe.</td></tr>
+  <tr><td><strong>Coordenador</strong></td><td>Quem pede os dados periodicamente, guarda em cache e avisa as entidades.</td></tr>
+  <tr><td><strong>Plataforma</strong></td><td>A parte de uma integração que cria um tipo de entidade (o <code>todo.py</code>).</td></tr>
+  <tr><td><strong>Serviço / ação</strong></td><td>Uma operação nomeada do HA, chamada com <code>domain.service</code>.</td></tr>
+  <tr><td><strong>supported_features</strong></td><td>Máscara de bits por onde a entidade declara o que sabe fazer.</td></tr>
+  <tr><td><strong>Lovelace</strong></td><td>A camada de dashboards do HA. Um dashboard é uma lista de cartões.</td></tr>
+  <tr><td><strong>Recurso</strong></td><td>Um ficheiro JavaScript registado no dashboard para o frontend carregar.</td></tr>
+  <tr><td><strong>Web Component</strong></td><td>Uma etiqueta HTML definida pelo programador, nativa do browser.</td></tr>
+  <tr><td><strong>Shadow DOM</strong></td><td>Uma árvore de elementos e estilos isolada do resto da página.</td></tr>
+  <tr><td><strong>hass</strong></td><td>O objeto que o HA entrega ao cartão: estados, serviços, WebSocket.</td></tr>
+  <tr><td><strong>uid</strong></td><td>Identidade estável de um item de lista. É por ele que se edita e apaga.</td></tr>
+</table>
+
 <footer>
-  Norish Shopping Card v1.0.0 &middot; MIT &middot;
+  Norish Shopping Card v1.1.0 &middot; MIT &middot;
   <a href="https://github.com/jdrdionisio/norish-shopping-card">repositório</a> &middot;
   requer a integração <a href="https://github.com/Caps3n/hass-norish">hass-norish</a>.
+  <br>Documento redigido a partir de código-fonte lido e de execuções reais contra a instância do
+  autor; onde algo não foi verificado, está dito.
 </footer>
 </div>
 
@@ -384,53 +1384,54 @@ POST /api/services/todo/remove_item           -> HTTP 200</code></pre>
   var host = document.getElementById("demo");
   var logEl = document.getElementById("log");
   var lines = [];
-  function log(s) {
-    lines.push(s);
-    logEl.textContent = lines.join("\n");
-  }
+  function log(s) { lines.push(s); if (lines.length > 15) lines.shift(); logEl.textContent = lines.join("\n"); }
 
   var NORISH = {
     "todo.norish_unsorted": [
-      { uid: "u1", summary: "Pão de mistura", status: "needs_action" },
-      { uid: "u2", summary: "Leite meio-gordo", status: "needs_action" },
+      { uid: "u1", summary: "Leite meio-gordo", status: "needs_action" },
+      { uid: "u2", summary: "Pão de mistura", status: "needs_action" },
       { uid: "u3", summary: "Ovos", status: "completed" }
     ],
     "todo.norish_lidl": [
       { uid: "l1", summary: "2 kg batatas", status: "needs_action" },
-      { uid: "l2", summary: "Iogurtes naturais", status: "needs_action" },
-      { uid: "l3", summary: "Azeite", status: "needs_action" }
+      { uid: "l2", summary: "Azeite", status: "needs_action" }
     ],
     "todo.norish_mercadona": [{ uid: "m1", summary: "Fruta", status: "needs_action" }],
     "todo.norish_continente": [],
     "todo.norish_auchan": []
   };
+  var PANTRY = [
+    { name: "butter", localeNames: { pt: "manteiga" } },
+    { name: "carrot", localeNames: { pt: "cenoura" } },
+    { name: "breadcrumbs", localeNames: { pt: "pão ralado" } }
+  ];
 
-  // hass simulado: as subscrições recebem a lista e as escritas alteram-na em memória
   var listeners = {};
-  function push(e) {
-    (listeners[e] || []).forEach(function (cb) { cb({ items: NORISH[e] }); });
-  }
+  function push(e) { (listeners[e] || []).forEach(function (cb) { cb({ items: NORISH[e] }); }); }
 
   var hass = {
-    states: Object.keys(NORISH).reduce(function (acc, e) {
-      acc[e] = {
-        entity_id: e,
-        attributes: {
-          friendly_name: "Norish " + e.replace("todo.norish_", "").replace(/^./, function (c) { return c.toUpperCase(); })
-        }
-      };
-      return acc;
-    }, {}),
+    states: (function () {
+      var s = {};
+      Object.keys(NORISH).forEach(function (e) {
+        s[e] = { entity_id: e, attributes: { friendly_name: "Norish " +
+          e.replace("todo.norish_", "").replace(/^./, function (c) { return c.toUpperCase(); }) } };
+      });
+      s["sensor.norish_pantry"] = { entity_id: "sensor.norish_pantry",
+        state: String(PANTRY.length), attributes: { friendly_name: "Norish Pantry", items: PANTRY } };
+      return s;
+    })(),
     connection: {
       subscribeMessage: function (cb, msg) {
+        log('--> {"type":"todo/item/subscribe","entity_id":"' + msg.entity_id + '"}');
         var e = msg.entity_id;
         (listeners[e] = listeners[e] || []).push(cb);
-        cb({ items: NORISH[e] || [] });               // push inicial, como o HA
+        cb({ items: NORISH[e] || [] });                 // push inicial, como o HA
+        log('<-- {"id":1,"type":"event","event":{"items":[' + (NORISH[e] || []).length + ']}}');
         return Promise.resolve(function () {});
       }
     },
     callService: function (domain, service, data) {
-      log("callService  " + domain + "." + service + "  " + JSON.stringify(data));
+      log("callService " + domain + "." + service + " " + JSON.stringify(data));
       var items = NORISH[data.entity_id] || (NORISH[data.entity_id] = []);
       if (service === "add_item") {
         items.push({ uid: "n" + Math.random().toString(36).slice(2, 7), summary: data.item, status: "needs_action" });
@@ -454,10 +1455,10 @@ POST /api/services/todo/remove_item           -> HTTP 200</code></pre>
 
   if (window.customElements && customElements.get("norish-shopping-card")) {
     var card = document.createElement("norish-shopping-card");
-    card.setConfig({ title: "Lista de compras" });
+    card.setConfig({ title: "Lista de compras", pantry_entity: "sensor.norish_pantry" });
     card.hass = hass;
     host.appendChild(card);
-    log("(demo carregado — as escritas são só locais)");
+    log("(demo ligado — 'hass' simulado, nada sai deste browser)");
   } else {
     document.getElementById("demofail").style.display = "block";
   }

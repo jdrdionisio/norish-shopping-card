@@ -1,0 +1,74 @@
+# Norish Shopping Card — despensa (opcional)
+#
+# O cartão detecta duplicados contra a lista atual sozinho, sem precisar disto.
+# Este ficheiro acrescenta a segunda metade: avisar quando um item já está na
+# DESPENSA do Norish ("já tens em casa"), que é o que evita comprar o que já
+# existe no armário.
+#
+# Porque é preciso isto: o cartão corre no browser, e o servidor Norish não
+# envia cabeçalhos CORS (verificado: um pedido OPTIONS com origem do HA
+# responde 204 sem um único Access-Control-*). Além disso, pôr a chave da API
+# no JavaScript do cartão expunha-a a quem vê o dashboard. Por isso os dados
+# têm de entrar no Home Assistant do lado do servidor — que é o que este
+# sensor faz.
+#
+# ---------------------------------------------------------------------------
+# 1) secrets.yaml
+# ---------------------------------------------------------------------------
+#
+#   norish_api_key: "a-tua-chave"
+#
+# (a mesma chave de Settings => User => API keys no Norish). O ficheiro
+# secrets.yaml não vai para git nem aparece na interface.
+#
+# ---------------------------------------------------------------------------
+# 2) configuration.yaml
+# ---------------------------------------------------------------------------
+#
+#   rest:
+#     - resource: "https://norish.jdrdionisio.com/api/trpc/pantry.list?batch=1&input=%7B%220%22%3A%7B%22json%22%3Anull%7D%7D"
+#       headers:
+#         x-api-key: !secret norish_api_key
+#       scan_interval: 1800
+#       timeout: 20
+#       sensor:
+#         - name: "Norish Pantry"
+#           unique_id: norish_pantry
+#           value_template: "{{ value_json[0].result.data.json | length }}"
+#           json_attributes_path: "$[0].result.data.json"
+#           json_attributes:
+#             - name
+#             - localeNames
+#
+# O URL acima foi testado contra o servidor: responde HTTP 200 com ~17 KB de
+# JSON. O `input` é o parâmetro do tRPC em JSON, já codificado — não o alteres
+# à mão.
+#
+# `scan_interval: 1800` (30 min) chega: a despensa muda pouco, e cada pedido
+# conta para o limite de 500 pedidos/hora da chave. Não baixes isto para
+# minutos sem motivo.
+#
+# ---------------------------------------------------------------------------
+# 3) cartão
+# ---------------------------------------------------------------------------
+#
+#   type: custom:norish-shopping-card
+#   title: Lista de compras
+#   pantry_entity: sensor.norish_pantry
+#
+# A partir daí, ao escrever "manteiga" o cartão mostra:
+#
+#   Já tens em casa:
+#   manteiga                                    despensa
+#
+# A correspondência usa o nome português (localeNames.pt) e também o inglês,
+# porque a despensa do Norish guarda nomes em inglês ("butter") com traduções.
+#
+# ---------------------------------------------------------------------------
+# Alternativa, sem sensor
+# ---------------------------------------------------------------------------
+#
+# Se preferires não mexer no configuration.yaml, o cartão continua a avisar
+# contra a lista atual (todos os itens, de todas as lojas) — que é o caso mais
+# frequente de "isto já cá está". A despensa é o extra.
+# 

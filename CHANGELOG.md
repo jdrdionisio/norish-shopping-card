@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.1.0
+
+- **Aviso de duplicados**: enquanto escreves, o cartão mostra os itens que já
+  correspondem ao texto — em qualquer loja, com distinção entre por comprar e
+  já comprado — e, se configurares `pantry_entity`, os que já tens na despensa.
+- Comparação tolerante: ignora maiúsculas/acentos, descarta quantidade e
+  unidade no início (`2 kg batatas` = `batatas`) e aceita singular/plural
+  (`ovo` encontra `Ovos`).
+- Nova opção `warn_duplicates` (por omissão `true`) e `pantry_entity`.
+- `docs/pantry-opcional.yaml`: sensor REST, com URL testado, para trazer a
+  despensa do Norish para o Home Assistant.
+- `docs/como-funciona.html` atualizado com a secção de duplicados.
+
 ## v1.0.0
 
 Primeira versão.

@@ -15,6 +15,8 @@ API onde está: no servidor.
 
 ## Funcionalidades
 
+![Aviso de item duplicado](https://raw.githubusercontent.com/jdrdionisio/norish-shopping-card/main/docs/duplicados.png)
+
 - **Seletor de loja** no cabeçalho: `Unsorted` + uma lista por loja
   (Lidl, Mercadona, Continente, Auchan, …), cada uma com a contagem de itens
   ativos.
@@ -24,6 +26,9 @@ API onde está: no servidor.
 - **Editar** — toca no texto do item, altera e prime Enter (Escape cancela).
 - **Apagar item** — botão `✕`.
 - **Limpar concluídos** — botão na barra inferior.
+- **Aviso de duplicados** — enquanto escreves, o cartão mostra o que já está
+  na lista (em qualquer loja) e, se configurares, o que já tens na despensa do
+  Norish. É um aviso, não um bloqueio: podes sempre adicionar.
 - Atualização em tempo real por subscrição websocket.
 
 ## Requisitos
@@ -78,6 +83,34 @@ entities:
 |------------|-----------------|----------------------|-----------|
 | `title`    | string          | `Lista de compras`   | Título do cartão. |
 | `entities` | lista de ids    | (auto-descoberta)    | Lista explícita de entidades `todo.norish_*` e respetiva ordem. |
+| `warn_duplicates` | bool     | `true`               | Avisar quando o texto escrito já corresponde a um item da lista. |
+| `pantry_entity`   | entity id | (nenhuma)           | Sensor com a despensa do Norish; liga o aviso «já tens em casa». Ver `docs/pantry-opcional.yaml`. |
+
+## Evitar criar itens duplicados
+
+O cartão faz duas verificações enquanto escreves, por baixo do campo de
+adicionar:
+
+1. **Contra a lista atual** (sempre ativa). Percorre os itens de *todas* as
+   lojas, não só da visível — um item noutra loja continua a ser um item que já
+   está na lista. Distingue os que estão por comprar dos já comprados.
+2. **Contra a despensa** (opcional). A despensa é a secção «o que temos em
+   casa» do Norish, e é a forma de evitar comprar o que já existe no armário.
+
+A comparação normaliza o texto antes de o comparar: ignora maiúsculas e
+acentos, descarta a quantidade e a unidade do início (`2 kg batatas` e
+`batatas` são a mesma coisa), e tolera singular/plural (`ovo` encontra `Ovos`).
+Nomes inventados não dão falso positivo — `leitinho` não corresponde a `Leite
+meio-gordo`.
+
+Como a despensa não está exposta ao Home Assistant, o ponto 2 precisa de um
+sensor REST no teu `configuration.yaml`. Fica tudo explicado, com o YAML e o
+URL já testados, em [`docs/pantry-opcional.yaml`](docs/pantry-opcional.yaml).
+
+> Porque não vai buscar isto diretamente ao Norish: a API do Norish não envia
+> cabeçalhos CORS (um pedido `OPTIONS` com origem do HA responde `204` sem
+> nenhum `Access-Control-*`), e a chave da API teria de ficar visível no
+> JavaScript do cartão. Os dados têm de entrar pelo servidor.
 
 ## Notas
 

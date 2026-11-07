@@ -15,7 +15,7 @@
  * clear completed, live per-store item counts, store switcher.
  */
 
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 const PREFIX = "todo.norish_";
 
 const L = {
@@ -27,14 +27,35 @@ const L = {
   empty: "Sem itens nesta lista.",
   remove: "Apagar item",
   edit_hint: "Tocar para editar",
+  dup_active: "Já está na lista:",
+  dup_done: "Já comprado (na lista):",
+  pantry_title: "Já tens em casa:",
+  pantry_store: "despensa",
 };
+
+/**
+ * Units and connectives stripped from the front of a name before comparing, so
+ * "2 kg batatas" and "batatas" are recognised as the same thing. Norish
+ * normalises units into English, so both spellings are listed.
+ */
+const LEAD_NOISE = new Set([
+  "de", "do", "da", "dos", "das", "e",
+  "g", "gr", "gramas", "kg", "kgs", "mg",
+  "l", "lt", "litro", "litros", "ml", "cl", "dl",
+  "un", "unds", "unid", "unidade", "unidades",
+  "pc", "pcs", "piece", "pieces", "slice", "slices",
+  "copo", "copos", "cup", "cups", "colher", "colheres", "spoon", "spoons",
+  "lata", "latas", "can", "cans", "pacote", "pacotes", "pack", "packs",
+  "caixa", "caixas", "box", "boxes", "garrafa", "garrafas", "bottle", "bottles",
+  "saco", "sacos", "bag", "bags", "molho", "jar", "jars",
+]);
 
 class NorishShoppingCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._hass = null;
-    this._config = { title: "Lista de compras", entities: null };
+    this._config = { title: "Lista de compras", entities: null, warn_duplicates: true };
     this._byEntity = {};   // entity_id -> [ {uid, summary, status, ...} ]
     this._unsubs = {};     // entity_id -> unsubscribe fn (or null while pending)
     this._pending = {};    // entity_id -> true while the subscription is opening
@@ -54,7 +75,7 @@ class NorishShoppingCard extends HTMLElement {
       throw new Error("norish-shopping-card: 'entities' must be a list of todo entity ids");
     }
     this._config = Object.assign(
-      { title: "Lista de compras", entities: null },
+      { title: "Lista de compras", entities: null, warn_duplicates: true, pantry_entity: null },
       config || {}
     );
     this._sig = null;
@@ -251,6 +272,20 @@ class NorishShoppingCard extends HTMLElement {
           cursor: pointer;
         }
         .add button:active { filter: brightness(.9); }
+        .warn {
+          display: flex; flex-direction: column; gap: 4px;
+          background: var(--secondary-background-color, rgba(3,169,244,.08));
+          border-left: 3px solid var(--warning-color, var(--primary-color, #ffa600));
+          border-radius: 8px; padding: 8px 10px; font-size: .86rem;
+          color: var(--primary-text-color, #212121);
+        }
+        .warn.hidden { display: none; }
+        .warn .wtitle {
+          font-weight: 600; color: var(--warning-color, var(--secondary-text-color, #727272));
+        }
+        .warn .wrow { display: flex; gap: 6px; align-items: baseline; }
+        .warn .wname { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+        .warn .wstore { flex: 0 0 auto; color: var(--secondary-text-color, #727272); font-size: .78rem; }
         .list { display: flex; flex-direction: column; }
         .row {
           display: flex; align-items: center; gap: 10px;
@@ -303,6 +338,7 @@ class NorishShoppingCard extends HTMLElement {
                  autocapitalize="sentences" enterkeyhint="done">
           <button class="addBtn" type="button" title="${L.add_title}">+</button>
         </div>
+        <div class="warn hidden"></div>
         <div class="list"></div>
         <div class="donebar">
           <button class="doneToggle" type="button"></button>
@@ -319,6 +355,7 @@ class NorishShoppingCard extends HTMLElement {
       store: root.querySelector(".store"),
       entry: root.querySelector(".entry"),
       addBtn: root.querySelector(".addBtn"),
+      warn: root.querySelector(".warn"),
       list: root.querySelector(".list"),
       done: root.querySelector(".done"),
       doneList: root.querySelector(".doneList"),
@@ -334,6 +371,8 @@ class NorishShoppingCard extends HTMLElement {
       }
     });
     this.$.addBtn.addEventListener("click", () => this._add());
+    this.$.entry.addEventListener("input", () => this._renderWarn());
+    this.$.entry.addEventListener("blur", () => this._renderWarn());
     this.$.store.addEventListener("change", () => {
       this._selected = this.$.store.value;
       this._editing = null;
@@ -438,6 +477,8 @@ class NorishShoppingCard extends HTMLElement {
         this._editing = null;
       }
     }
+
+    this._renderWarn();
   }
 
   _row(item, isDone) {
@@ -465,6 +506,157 @@ class NorishShoppingCard extends HTMLElement {
   }
 
   /* ------------------------------------------------------------------ */
+  /* duplicate detection against everything already listed              */
+  /* ------------------------------------------------------------------ */
+
+  _norm(s) {
+    return String(s)
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/([0-9])([a-z])/g, "$1 $2") // "2kg" -> "2 kg", "500ml" -> "500 ml"
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  }
+
+  /** Drop a leading quantity ("2", "2,5") and unit/connective words. */
+  _core(s) {
+    const toks = this._norm(s).split(" ").filter(Boolean);
+    while (
+      toks.length > 1 &&
+      (/^\d+([.,]\d+)?$/.test(toks[0]) || LEAD_NOISE.has(toks[0]))
+    ) {
+      toks.shift();
+    }
+    return toks.join(" ");
+  }
+
+  /**
+   * Every item already in any list, keyed by its comparable name. All stores on
+   * purpose: an item filed under another store still means it is already on the
+   * shopping list.
+   */
+  _dupeIndex() {
+    const index = new Map();
+    for (const eid of Object.keys(this._byEntity)) {
+      for (const it of this._byEntity[eid] || []) {
+        const key = this._core(it.summary || "");
+        if (!key) continue;
+        if (!index.has(key)) index.set(key, []);
+        index.get(key).push({ item: it, entity: eid });
+      }
+    }
+    return index;
+  }
+
+  /** Does a typed name match an already-listed one? Shared by list and pantry. */
+  _matches(q, key) {
+    if (!q || !key) return false;
+    // Crude singular (PT/EN plural in -s) so "ovo" finds "Ovos" and vice versa.
+    const sing = (w) => (w.length >= 4 && w.endsWith("s") ? w.slice(0, -1) : w);
+    const qw = q.split(" ").map(sing);
+    const kw = key.split(" ").map(sing);
+    const qs = qw.join(" ");
+    const ks = kw.join(" ");
+    if (qs === ks || kw.includes(qs) || qw.includes(ks)) return true;
+    if (qs.length >= 4 && (ks.startsWith(qs + " ") || qs.startsWith(ks + " "))) {
+      return true;
+    }
+    const setK = new Set(kw);
+    const setQ = new Set(qw);
+    const subset = (a, b) => a.length > 0 && a.every((t) => t.length >= 2 && b.has(t));
+    return subset(qw, setK) || subset(kw, setQ);
+  }
+
+  /** Items already listed (any store) whose name matches the typed text. */
+  _findDupes(text) {
+    const q = this._core(text);
+    if (q.length < 3) return [];
+    const out = [];
+    for (const [key, hits] of this._dupeIndex()) {
+      if (this._matches(q, key)) out.push(...hits);
+    }
+    return out;
+  }
+
+  /**
+   * Names from the optional pantry sensor (`pantry_entity`). Accepts either a
+   * list of strings or the Norish shape ({name, localeNames}); the Portuguese
+   * translation is matched too, because pantry names are stored in English.
+   */
+  _pantryNames() {
+    const eid = this._config.pantry_entity;
+    if (!eid || !this._hass || !this._hass.states[eid]) return [];
+    const attrs = this._hass.states[eid].attributes || {};
+    const raw = attrs.items || attrs.pantry || attrs.ingredients;
+    if (!Array.isArray(raw)) return [];
+    const out = [];
+    for (const it of raw) {
+      if (typeof it === "string") {
+        out.push({ display: it, key: this._core(it) });
+        continue;
+      }
+      const names = [
+        it.localeNames && (it.localeNames.pt || it.localeNames.pt_PT),
+        it.name,
+      ].filter(Boolean);
+      for (const n of names) out.push({ display: n, key: this._core(n) });
+    }
+    return out.filter((n) => n.key);
+  }
+
+  _findPantry(text) {
+    const q = this._core(text);
+    if (q.length < 3) return [];
+    const seen = new Set();
+    const out = [];
+    for (const it of this._pantryNames()) {
+      if (this._matches(q, it.key) && !seen.has(it.key)) {
+        seen.add(it.key);
+        out.push(it);
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Show what the typed text already matches. Deliberately advisory: it never
+   * blocks Enter, because a second "leite" is sometimes exactly what is wanted.
+   */
+  _renderWarn() {
+    if (!this._built) return;
+    const el = this.$.warn;
+    const text = this.$.entry.value;
+    const off = this._config.warn_duplicates === false;
+    const dupes = off ? [] : this._findDupes(text);
+    const pantry = this._findPantry(text);
+    if (!dupes.length && !pantry.length) {
+      el.classList.add("hidden");
+      el.innerHTML = "";
+      return;
+    }
+    const row = (name, store) =>
+      `<div class="wrow"><span class="wname">${this._esc(name)}</span>` +
+      `<span class="wstore">${this._esc(store)}</span></div>`;
+    const active = dupes.filter((h) => h.item.status !== "completed");
+    const done = dupes.filter((h) => h.item.status === "completed");
+    el.innerHTML =
+      (active.length
+        ? `<div class="wtitle">${L.dup_active}</div>` +
+          active.map((h) => row(h.item.summary || "", this._name(h.entity))).join("")
+        : "") +
+      (done.length
+        ? `<div class="wtitle">${L.dup_done}</div>` +
+          done.map((h) => row(h.item.summary || "", this._name(h.entity))).join("")
+        : "") +
+      (pantry.length
+        ? `<div class="wtitle">${L.pantry_title}</div>` +
+          pantry.map((p) => row(p.display, L.pantry_store)).join("")
+        : "");
+    el.classList.remove("hidden");
+  }
+
+  /* ------------------------------------------------------------------ */
   /* actions                                                            */
   /* ------------------------------------------------------------------ */
 
@@ -472,6 +664,7 @@ class NorishShoppingCard extends HTMLElement {
     const text = this.$.entry.value.trim();
     if (!text || !this._selected) return;
     this.$.entry.value = "";
+    this._renderWarn();
     this._service("todo", "add_item", {
       entity_id: this._selected,
       item: text,
