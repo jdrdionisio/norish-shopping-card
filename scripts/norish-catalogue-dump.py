@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
 """Exporta o catálogo de alimentos do Norish para um JSON que o cartão lê.
 
+SPDX-License-Identifier: Apache-2.0
+Copyright 2026 João Dionísio
+
 Porque existe: o cartão corre no browser e não pode falar com o Norish (não há
 CORS, e a chave da API não pode ficar no JavaScript). Este script põe o catálogo
 num ficheiro que o Home Assistant serve na mesma origem — e aí o cartão lê-o sem
 problema nenhum.
+
+Atenção à licença dos dados: o catálogo vem da taxonomia de ingredientes do
+Open Food Facts, distribuída sob a Open Database License (ODbL) v1.0. O
+resultado deste script é um derivado dessa base de dados e, se o redistribuíres,
+mantém a atribuição e a ODbL. Ele não faz parte deste repositório, que é
+Apache-2.0.
 
 É retomável e respeita o limite da chave (500 pedidos/hora, após os quais o
 Norish *desativa* a chave e passa a responder 401, o que parece uma chave

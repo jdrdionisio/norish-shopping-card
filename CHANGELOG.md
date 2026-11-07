@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.3.1
+
+- **Licença mudada de MIT para Apache-2.0.** A Apache-2.0 mantém a permissividade
+  e acrescenta uma concessão explícita de patentes; em troca pede que se preserve
+  o `NOTICE` e se indique o que foi alterado.
+- Novo ficheiro `NOTICE` com a atribuição do projeto.
+- Cabeçalhos SPDX nos ficheiros de código, e nota no `scripts/norish-catalogue-dump.py`
+  de que o catálogo que ele produz é um derivado do Open Food Facts e fica sob ODbL.
+
 ## v1.3.0
 
 - **As sugestões funcionam sem configuração nenhuma.** Sem `ingredients_url`, o

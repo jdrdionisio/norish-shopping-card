@@ -245,4 +245,13 @@ google-chrome --headless=new --window-size=420,362 --force-device-scale-factor=2
 
 ## Licença
 
-MIT — ver [LICENSE](LICENSE).
+Apache License 2.0 — ver [LICENSE](LICENSE) e [NOTICE](NOTICE).
+
+Todos os ficheiros deste repositório (o cartão, o script, a lista de alimentos
+`ingredientes-comuns.json` e a documentação) estão sob esta licença.
+
+**Não** faz parte do repositório, nem está sob esta licença, qualquer catálogo de
+alimentos que gerares a partir da tua instância do Norish: esses dados vêm da
+taxonomia do Open Food Facts e ficam sob a **ODbL** onde forem redistribuídos.
+Por isso é que o catálogo completo é gerado localmente e vive do lado do Home
+Assistant.

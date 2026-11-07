@@ -6,16 +6,20 @@
  * Card type: custom:norish-shopping-card
  * Repo: https://github.com/jdrdionisio/norish-shopping-card
  *
+ * SPDX-License-Identifier: Apache-2.0
+ * Copyright 2026 João Dionísio
+ *
  * Data path: this card does NOT talk to the Norish API. It reads the
  * todo.norish_* entities over the websocket (todo/item/subscribe) and drives
  * them with the standard to-do services (add_item / update_item / remove_item /
  * remove_completed_items). The integration owns the API key.
  *
  * Features: add item, mark/unmark done, inline rename, delete item,
- * clear completed, live per-store item counts, store switcher.
+ * clear completed, live per-store item counts, store switcher, duplicate
+ * warning, food suggestions from a catalogue, pantry warnings.
  */
 
-const VERSION = "1.3.0";
+const VERSION = "1.3.1";
 const PREFIX = "todo.norish_";
 
 const L = {
