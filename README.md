@@ -87,6 +87,7 @@ entities:
 | `pantry_entity`   | entity id | (nenhuma)           | Sensor com a despensa do Norish; liga o aviso «já tens em casa». Ver `docs/pantry-opcional.yaml`. |
 | `ingredients_url` | URL      | (nenhuma)            | Ficheiro JSON com o catálogo de alimentos, servido pelo HA (ex. `/local/norish-ingredients.json`); liga as sugestões ao escrever. |
 | `ingredients`     | lista    | (nenhuma)            | O mesmo catálogo, mas escrito no YAML — para listas curtas. |
+| `suggestions`     | número   | `10`                 | Quantas sugestões mostrar (1 a 30). |
 
 ## Evitar criar itens duplicados
 
@@ -143,6 +144,11 @@ Um export real de 6214 alimentos com 71 516 aliases passou de **5,4 MB para
 202 KB** (10 126 nomes), descartando as outras línguas e as descrições de
 preparação («alho descascado e cortado em rodelas finas»), que não são coisas
 que se compram.
+
+**Também podes usar o export tal como está**, sem converter: o cartão lê-o
+igualmente e extrai ~10 300 nomes. Custa 150 ms a carregar em vez de 30 ms, e as
+sugestões trazem algumas variantes de preparação a mais — por isso a conversão
+vale a pena, mas não é obrigatória se o que te trava for o passo extra.
 
 **Se não tens export**, o mesmo script vai buscá-lo à API (retomável, e respeita
 o limite de 500 pedidos/hora da chave — pára e continua mais tarde):

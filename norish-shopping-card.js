@@ -15,7 +15,7 @@
  * clear completed, live per-store item counts, store switcher.
  */
 
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";
 const PREFIX = "todo.norish_";
 
 const L = {
@@ -59,7 +59,8 @@ class NorishShoppingCard extends HTMLElement {
     this.attachShadow({ mode: "open" });
     this._hass = null;
     this._config = { title: "Lista de compras", entities: null, warn_duplicates: true,
-                     pantry_entity: null, ingredients_url: null, ingredients: null };
+                     pantry_entity: null, ingredients_url: null, ingredients: null,
+                     suggestions: 10 };
     this._catalogue = null;
     this._catState = "idle";
     this._byEntity = {};   // entity_id -> [ {uid, summary, status, ...} ]
@@ -82,7 +83,7 @@ class NorishShoppingCard extends HTMLElement {
     }
     this._config = Object.assign(
       { title: "Lista de compras", entities: null, warn_duplicates: true,
-        pantry_entity: null, ingredients_url: null, ingredients: null },
+        pantry_entity: null, ingredients_url: null, ingredients: null, suggestions: 10 },
       config || {}
     );
     this._sig = null;
@@ -812,7 +813,9 @@ class NorishShoppingCard extends HTMLElement {
         a.e.norm.length - b.e.norm.length ||
         a.e.norm.localeCompare(b.e.norm, "pt")
     );
-    return all.slice(0, 8).map((x) => x.e);
+    let limit = Number(this._config.suggestions);
+    if (!Number.isFinite(limit) || limit <= 0) limit = 10;
+    return all.slice(0, Math.min(Math.max(limit, 1), 30)).map((x) => x.e);
   }
 
   _renderSugg() {
@@ -825,7 +828,8 @@ class NorishShoppingCard extends HTMLElement {
       return;
     }
     if (this._catState === "error" && this._config.ingredients_url) {
-      el.innerHTML = `<span class="note">${L.cat_error}</span>`;
+      el.innerHTML =
+        `<span class="note">${L.cat_error} (${this._esc(this._config.ingredients_url)})</span>`;
       el.classList.remove("hidden");
       return;
     }

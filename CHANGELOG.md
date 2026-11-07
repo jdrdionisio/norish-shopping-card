@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.1
+
+- Nova opção `suggestions` (por omissão **10**, até 30) — quantas sugestões
+  mostrar ao escrever.
+- Quando o catálogo falha, a mensagem passa a dizer qual o URL que não foi
+  possível carregar, para o diagnóstico ser imediato.
+- Confirmado que o export bruto do Norish (5,4 MB) também funciona tal como
+  está, sem conversão: 150 ms a carregar em vez de 30 ms.
+
 ## v1.2.0
 
 - **Sugestões de alimentos ao escrever**: o cartão lê um catálogo JSON servido
