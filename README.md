@@ -1,5 +1,7 @@
 # Norish Shopping Card
 
+![Norish Shopping Card](https://raw.githubusercontent.com/jdrdionisio/norish-shopping-card/main/docs/card.png)
+
 Um cartão Lovelace para Home Assistant que faz uma lista de compras estilo
 **Bring!**, alimentada pelo Norish através da integração
 [hass-norish](https://github.com/Caps3n/hass-norish).
@@ -84,6 +86,17 @@ entities:
   diferente depois de gravado — por exemplo `2 kg farinha`.
 - Reordenar arrastando não está disponível: a entidade to-do do Norish não
   expõe essa capacidade.
+
+## Desenvolvimento
+
+A imagem do README é gerada a partir de `docs/preview.html`, que carrega o
+cartão com um `hass` simulado:
+
+```
+cd docs
+google-chrome --headless=new --window-size=420,362 --force-device-scale-factor=2 \
+  --screenshot=card.png "file://$PWD/preview.html"
+```
 
 ## Licença
 

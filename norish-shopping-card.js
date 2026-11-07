@@ -422,9 +422,9 @@ class NorishShoppingCard extends HTMLElement {
     this.$.done.classList.toggle("hidden", !this._showDone);
     this.$.doneToggle.style.display = showDoneBar ? "" : "none";
     this.$.clearDone.style.display = done.length ? "" : "none";
-    this.$.doneToggle.textContent = `${done.length || ""} ${
+    this.$.doneToggle.textContent = `${
       this._showDone ? L.hide_done : L.show_done
-    }`.trim();
+    } (${done.length})`;
     this.$.doneList.innerHTML = done.map((i) => this._row(i, true)).join("");
 
     if (this._editing) {

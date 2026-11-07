@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Norish Shopping Card — pré-visualização</title>
+<style>
+  :root{
+    --primary-color:#03a9f4;
+    --text-primary-color:#ffffff;
+    --primary-background-color:#f5f5f5;
+    --card-background-color:#ffffff;
+    --secondary-background-color:#e8e8e8;
+    --primary-text-color:#212121;
+    --secondary-text-color:#727272;
+    --divider-color:rgba(0,0,0,.12);
+    --error-color:#db4437;
+    --ha-card-border-radius:12px;
+    --ha-card-box-shadow:0 2px 6px rgba(0,0,0,.12);
+  }
+  html,body{margin:0;padding:0;background:var(--primary-background-color)}
+  body{padding:16px;box-sizing:border-box;width:420px;
+       font-family:'Roboto','Noto Sans',system-ui,sans-serif}
+</style>
+</head>
+<body>
+<script src="../norish-shopping-card.js"></script>
+<script>
+  const NORISH = {
+    "todo.norish_unsorted": [
+      {uid:"u1", summary:"Pão de mistura", status:"needs_action"},
+      {uid:"u2", summary:"Leite meio-gordo", status:"needs_action"},
+      {uid:"u3", summary:"Ovos", status:"completed"}
+    ],
+    "todo.norish_lidl": [
+      {uid:"l1", summary:"2 kg batatas", status:"needs_action"},
+      {uid:"l2", summary:"Iogurtes naturais", status:"needs_action"},
+      {uid:"l3", summary:"Azeite", status:"needs_action"},
+      {uid:"l4", summary:"Farinha", status:"completed"}
+    ],
+    "todo.norish_mercadona": [{uid:"m1", summary:"Fruta", status:"needs_action"}],
+    "todo.norish_continente": [],
+    "todo.norish_auchan": []
+  };
+  const states = {};
+  for (const [e, items] of Object.entries(NORISH)) {
+    states[e] = { entity_id:e, state:String(items.filter(i=>i.status!=="completed").length),
+                  attributes:{ friendly_name:"Norish " +
+                    e.replace("todo.norish_","").replace(/^./,c=>c.toUpperCase()) } };
+  }
+  const hass = {
+    states,
+    connection: {
+      subscribeMessage(cb, msg){
+        cb({ items: NORISH[msg.entity_id] || [] });
+        return Promise.resolve(() => {});
+      }
+    },
+    callService(){ return Promise.resolve(); },
+    callWS(msg){ return Promise.resolve({ items: NORISH[msg.entity_id] || [] }); }
+  };
+  const card = document.createElement("norish-shopping-card");
+  card.setConfig({ title: "Lista de compras" });
+  card.hass = hass;
+  document.body.appendChild(card);
+  // abre a secção "concluídos" para a captura mostrar tudo
+  setTimeout(() => {
+    card.shadowRoot.querySelector(".doneToggle").click();
+    document.title = "ready";
+  }, 50);
+</script>
+</body>
+</html>
