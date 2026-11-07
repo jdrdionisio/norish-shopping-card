@@ -15,7 +15,7 @@
  * clear completed, live per-store item counts, store switcher.
  */
 
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 const PREFIX = "todo.norish_";
 
 const L = {
@@ -31,6 +31,9 @@ const L = {
   dup_done: "Já comprado (na lista):",
   pantry_title: "Já tens em casa:",
   pantry_store: "despensa",
+  cat_loading: "A carregar o catálogo…",
+  cat_error: "Não consegui carregar o catálogo de alimentos.",
+  sugg_add: "Adicionar",
 };
 
 /**
@@ -55,7 +58,10 @@ class NorishShoppingCard extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this._hass = null;
-    this._config = { title: "Lista de compras", entities: null, warn_duplicates: true };
+    this._config = { title: "Lista de compras", entities: null, warn_duplicates: true,
+                     pantry_entity: null, ingredients_url: null, ingredients: null };
+    this._catalogue = null;
+    this._catState = "idle";
     this._byEntity = {};   // entity_id -> [ {uid, summary, status, ...} ]
     this._unsubs = {};     // entity_id -> unsubscribe fn (or null while pending)
     this._pending = {};    // entity_id -> true while the subscription is opening
@@ -75,7 +81,8 @@ class NorishShoppingCard extends HTMLElement {
       throw new Error("norish-shopping-card: 'entities' must be a list of todo entity ids");
     }
     this._config = Object.assign(
-      { title: "Lista de compras", entities: null, warn_duplicates: true, pantry_entity: null },
+      { title: "Lista de compras", entities: null, warn_duplicates: true,
+        pantry_entity: null, ingredients_url: null, ingredients: null },
       config || {}
     );
     this._sig = null;
@@ -197,6 +204,7 @@ class NorishShoppingCard extends HTMLElement {
 
     this._renderStores();
     this._render();
+    this._loadCatalogue();
   }
 
   _teardown() {
@@ -286,6 +294,26 @@ class NorishShoppingCard extends HTMLElement {
         .warn .wrow { display: flex; gap: 6px; align-items: baseline; }
         .warn .wname { flex: 1 1 auto; min-width: 0; word-break: break-word; }
         .warn .wstore { flex: 0 0 auto; color: var(--secondary-text-color, #727272); font-size: .78rem; }
+        .sugg {
+          display: flex; flex-wrap: wrap; gap: 6px;
+          padding: 2px 0;
+        }
+        .sugg.hidden { display: none; }
+        .sugg .chip {
+          background: var(--secondary-background-color, rgba(3,169,244,.10));
+          color: var(--primary-text-color, #212121);
+          border: 1px solid var(--divider-color, rgba(0,0,0,.12));
+          border-radius: 999px; padding: 5px 11px; font-size: .87rem;
+          cursor: pointer; max-width: 100%;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .sugg .chip:hover { border-color: var(--primary-color, #03a9f4); }
+        .sugg .chip:active { filter: brightness(.94); }
+        .sugg .chip .plus { color: var(--primary-color, #03a9f4); font-weight: 700; margin-right: 4px; }
+        .sugg .note {
+          font-size: .78rem; color: var(--secondary-text-color, #727272);
+          flex-basis: 100%; margin-top: 2px;
+        }
         .list { display: flex; flex-direction: column; }
         .row {
           display: flex; align-items: center; gap: 10px;
@@ -338,6 +366,7 @@ class NorishShoppingCard extends HTMLElement {
                  autocapitalize="sentences" enterkeyhint="done">
           <button class="addBtn" type="button" title="${L.add_title}">+</button>
         </div>
+        <div class="sugg hidden"></div>
         <div class="warn hidden"></div>
         <div class="list"></div>
         <div class="donebar">
@@ -355,6 +384,7 @@ class NorishShoppingCard extends HTMLElement {
       store: root.querySelector(".store"),
       entry: root.querySelector(".entry"),
       addBtn: root.querySelector(".addBtn"),
+      sugg: root.querySelector(".sugg"),
       warn: root.querySelector(".warn"),
       list: root.querySelector(".list"),
       done: root.querySelector(".done"),
@@ -371,8 +401,16 @@ class NorishShoppingCard extends HTMLElement {
       }
     });
     this.$.addBtn.addEventListener("click", () => this._add());
-    this.$.entry.addEventListener("input", () => this._renderWarn());
+    this.$.entry.addEventListener("input", () => { this._renderSugg(); this._renderWarn(); });
     this.$.entry.addEventListener("blur", () => this._renderWarn());
+    this.$.sugg.addEventListener("click", (ev) => {
+      const chip = ev.target.closest(".chip");
+      if (!chip) return;
+      this.$.entry.value = "";
+      this._renderSugg();
+      this._renderWarn();
+      this._addItem(chip.dataset.name);
+    });
     this.$.store.addEventListener("change", () => {
       this._selected = this.$.store.value;
       this._editing = null;
@@ -479,6 +517,7 @@ class NorishShoppingCard extends HTMLElement {
     }
 
     this._renderWarn();
+    this._renderSugg();
   }
 
   _row(item, isDone) {
@@ -657,18 +696,178 @@ class NorishShoppingCard extends HTMLElement {
   }
 
   /* ------------------------------------------------------------------ */
+  /* catálogo de alimentos (sugestões de escrita)                       */
+  /* ------------------------------------------------------------------ */
+
+  /**
+   * Aceita as formas prováveis do ficheiro: lista de nomes, lista de objetos
+   * ({name, localeNames, aliases}), {items:[…]}, ou a resposta crua do tRPC.
+   * Devolve sempre [{display, norm}] — normalizado uma só vez, porque isto
+   * pode ter dezenas de milhar de entradas.
+   */
+  _normaliseCatalogue(raw) {
+    let list = raw;
+    if (list && !Array.isArray(list)) {
+      // {ingredients:[…]} é o formato do export do Norish; {items:[…]} o do tRPC
+      if (Array.isArray(list.ingredients)) list = list.ingredients;
+      else if (Array.isArray(list.items)) list = list.items;
+    }
+    if (Array.isArray(list) && list[0] && list[0].result) {
+      const inner = list[0].result && list[0].result.data && list[0].result.data.json;
+      list = Array.isArray(inner) ? inner : inner && inner.items;
+    }
+    if (!Array.isArray(list)) return [];
+
+    const out = [];
+    const seen = new Set();
+    const push = (text) => {
+      if (typeof text !== "string") return;
+      const display = text.trim();
+      const norm = this._core(display);
+      if (!norm || seen.has(norm)) return;
+      seen.add(norm);
+      out.push({ display, norm });
+    };
+
+    for (const it of list) {
+      if (typeof it === "string") {
+        push(it);
+        continue;
+      }
+      if (!it || typeof it !== "object") continue;
+      const loc = it.localeNames || {};
+      push(loc.pt || loc.pt_PT);
+      push(it.pt);
+      push(it.name);
+      if (Array.isArray(it.aliases)) {
+        for (const a of it.aliases) {
+          if (!a || typeof a !== "object") continue;
+          const l = a.locale;
+          if (!l || l === "pt" || l === "pt-PT" || l === "pt-BR" || l === "en") push(a.text);
+        }
+      }
+    }
+    return out;
+  }
+
+  async _loadCatalogue() {
+    if (this._catState === "loading" || this._catState === "ready") return;
+
+    // lista pequena escrita no próprio YAML
+    if (Array.isArray(this._config.ingredients) && this._config.ingredients.length) {
+      this._catalogue = this._normaliseCatalogue(this._config.ingredients);
+      this._catState = "ready";
+      this._renderSugg();
+      return;
+    }
+
+    const url = this._config.ingredients_url;
+    if (!url) return;
+
+    this._catState = "loading";
+    this._renderSugg();
+    try {
+      // cache por omissão: o HA responde 304 quando o ficheiro não mudou, e o
+      // catálogo muda raramente. Trocar o ficheiro -> recarregar com Ctrl+Shift+R.
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      const list = this._normaliseCatalogue(await r.json());
+      if (!list.length) throw new Error("sem entradas reconhecíveis");
+      this._catalogue = list;
+      this._catState = "ready";
+      console.info(`norish-shopping-card: catálogo com ${list.length} alimentos`);
+    } catch (err) {
+      this._catState = "error";
+      console.warn("norish-shopping-card: falhou o catálogo:", err);
+    }
+    this._renderSugg();
+  }
+
+  /** As melhores correspondências para o texto escrito, já sem o que está na lista. */
+  _suggest(text) {
+    const cat = this._catalogue;
+    if (!cat || !cat.length) return [];
+    const q = this._core(text);
+    if (q.length < 2) return [];
+
+    const onList = new Set(this._dupeIndex().keys());
+    const strong = [];
+    const weak = [];
+    for (const e of cat) {
+      if (onList.has(e.norm)) continue;
+      let score;
+      if (e.norm === q) score = 0;
+      else if (e.norm.startsWith(q + " ")) score = 1;
+      else if (e.norm.startsWith(q)) score = 2;
+      else if (e.norm.split(" ").some((w) => w.startsWith(q))) score = 3;
+      else if (q.length >= 3 && e.norm.includes(q)) score = 4;
+      else continue;
+      if (score <= 2) strong.push({ e, score });
+      else if (weak.length < 60) weak.push({ e, score });
+    }
+    const all = strong.concat(weak);
+    all.sort(
+      (a, b) =>
+        a.score - b.score ||
+        a.e.norm.length - b.e.norm.length ||
+        a.e.norm.localeCompare(b.e.norm, "pt")
+    );
+    return all.slice(0, 8).map((x) => x.e);
+  }
+
+  _renderSugg() {
+    if (!this._built) return;
+    const el = this.$.sugg;
+
+    if (this._catState === "loading") {
+      el.innerHTML = `<span class="note">${L.cat_loading}</span>`;
+      el.classList.remove("hidden");
+      return;
+    }
+    if (this._catState === "error" && this._config.ingredients_url) {
+      el.innerHTML = `<span class="note">${L.cat_error}</span>`;
+      el.classList.remove("hidden");
+      return;
+    }
+
+    const items = this._suggest(this.$.entry.value);
+    if (!items.length) {
+      el.classList.add("hidden");
+      el.innerHTML = "";
+      return;
+    }
+    el.innerHTML = items
+      .map(
+        (e) =>
+          `<button type="button" class="chip" data-name="${this._esc(e.display)}" ` +
+          `title="${L.sugg_add}: ${this._esc(e.display)}"><span class="plus">+</span>${this._esc(
+            e.display
+          )}</button>`
+      )
+      .join("");
+    el.classList.remove("hidden");
+  }
+
+  /* ------------------------------------------------------------------ */
   /* actions                                                            */
   /* ------------------------------------------------------------------ */
+
+  _addItem(text) {
+    const t = (text || "").trim();
+    if (!t || !this._selected) return;
+    this._service("todo", "add_item", {
+      entity_id: this._selected,
+      item: t,
+    });
+  }
 
   _add() {
     const text = this.$.entry.value.trim();
     if (!text || !this._selected) return;
     this.$.entry.value = "";
+    this._renderSugg();
     this._renderWarn();
-    this._service("todo", "add_item", {
-      entity_id: this._selected,
-      item: text,
-    });
+    this._addItem(text);
   }
 
   _toggle(uid, checked) {

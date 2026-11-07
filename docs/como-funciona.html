@@ -92,7 +92,7 @@
   <p>Do cabo de rede à interface: os conceitos de rede que fazem o cartão falar, os conceitos
      de Home Assistant que o fazem pertencer ao sistema, e o caminho concreto que cada toque
      no ecrã percorre até ao Norish.</p>
-  <div class="meta">v1.1.0 &middot;
+  <div class="meta">v1.2.0 &middot;
     <a href="https://github.com/jdrdionisio/norish-shopping-card">github.com/jdrdionisio/norish-shopping-card</a>
   </div>
 </header>
@@ -123,7 +123,7 @@
     <li><a href="#p21">Escrever: serviços, e uma armadilha real</a></li>
     <li><a href="#p22">O modelo de renderização</a></li>
     <li><a href="#p23">Deteção de duplicados</a></li>
-    <li><a href="#p24">A despensa, e uma correção importante</a></li>
+    <li><a href="#p24">A despensa e o catálogo de alimentos</a></li>
     <li><a href="#p25">Limitações</a></li>
     <li><a href="#p26">Demonstração ao vivo</a></li>
     <li><a href="#p27">Verificação na instância real</a></li>
@@ -1178,7 +1178,7 @@ _core("2kg batatas")  → "batatas"       "2kg" separa-se em "2 kg"</code></pre>
   errado — e por isso também nunca bloqueia: um segundo «leite» é, às vezes, exatamente o que se quer.
 </div>
 
-<h2 id="p24"><span class="n">24</span>A despensa, e uma correção importante</h2>
+<h2 id="p24"><span class="n">24</span>A despensa e o catálogo de alimentos</h2>
 
 <p>A segunda verificação é contra a <strong>despensa</strong> do Norish — o «que temos em casa». Aqui
 houve duas descobertas que mudam o que se deve dizer sobre este cartão.</p>
@@ -1256,6 +1256,77 @@ pantry_entity: sensor.norish_pantry</code></pre>
 <p>Um pormenor que parece um detalhe e não é: a despensa guarda nomes em inglês com traduções. A
 correspondência tem de usar <code>localeNames.pt</code>, senão «manteiga» nunca encontra «butter».</p>
 
+<h4>Descoberta 3 — o catálogo de alimentos, e o truque da mesma origem</h4>
+
+<p>Falta a peça que o Norish usa no seu próprio campo de compras: a lista de
+alimentos que ele conhece. Também não está exposta ao Home Assistant, e o
+cartão também não a pode ir buscar (capítulo 5). Mas aqui há uma diferença em
+relação à despensa: o catálogo <strong>muda raramente</strong>, por isso não
+precisa de um sensor — precisa de um <em>ficheiro</em>.</p>
+
+<p>Basta pôr o catálogo em <code>/config/www/</code>, que o Home Assistant serve
+em <code>/local/</code>. Esse caminho é <strong>da mesma origem que o
+dashboard</strong>, logo o <code>fetch()</code> do cartão é um pedido local
+normal: sem CORS, sem preflight, sem chave.</p>
+
+<div class="flow">
+  <div class="node ghost">Cartão<br><small>no browser</small></div>
+  <div class="arrow">&rarr;<small>fetch /local/…</small></div>
+  <div class="node">Home Assistant<br><small>serve config/www</small></div>
+  <div class="arrow">&rarr;<small>mesma origem</small></div>
+  <div class="node">norish-ingredients.json<br><small>202 KB, estático</small></div>
+</div>
+
+<p>Note-se a diferença de estratégia, que é o conceito deste capítulo:</p>
+
+<table>
+  <tr><th></th><th>Despensa</th><th>Catálogo</th></tr>
+  <tr><td>Muda</td><td>Pouco, mas é estado</td><td>Quase nunca</td></tr>
+  <tr><td>Veículo</td><td>Sensor REST (entidade)</td><td>Ficheiro estático</td></tr>
+  <tr><td>Atualização</td><td>Poll a cada 30 min</td><td>Nova cópia do ficheiro</td></tr>
+  <tr><td>Lido por</td><td><code>hass.states[…].attributes</code></td><td><code>fetch()</code> uma vez</td></tr>
+</table>
+
+<div class="concept">
+  <span class="lbl">Conceito: escolher o veículo pela cadência</span>
+  Dados que mudam de minutos a minutos pedem uma entidade. Dados que mudam uma
+  vez por mês pedem um ficheiro. Meter o catálogo numa entidade obrigaria o HA a
+  carregar 10 000 nomes na máquina de estados — e o HA guarda o histórico de
+  cada estado. O ficheiro não tem esse custo.
+</div>
+
+<h4>O que se guarda, e o que se deita fora</h4>
+
+<p>O export bruto do Norish tem <strong>6214 alimentos</strong> com
+<strong>71 516 aliases</strong> em duas dezenas de línguas — 5,4 MB. Para um
+cartão que sugere enquanto se escreve, quase nada disso serve: o utilizador
+escreve em português, e a taxonomia está cheia de descrições de preparação
+(«alho descascado e cortado em rodelas finas») e de especificações industriais
+(«50-63% unsalted vegetable fat»).</p>
+
+<pre class="term"><code>5,4 MB   6214 alimentos, 71516 aliases, 21 línguas
+   │
+   │  ficar com: name + aliases em pt / pt-BR / en / sem língua
+   │  descartar: as outras línguas, os nomes com "%" ou a começar por dígito,
+   │             e as descrições de preparação com mais de 25 caracteres
+   ▼
+202 KB   10 126 nomes, ordenados e sem repetições  (27x mais pequeno)</code></pre>
+
+<p>Depois, o cartão normaliza essa lista <em>uma só vez</em> ao carregar
+(42 ms para os 10 126 nomes) e guarda-a já preparada. Cada tecla faz uma
+passagem por esse índice — <strong>4,85 ms</strong> medidos — e ordena por
+degraus: igual, depois começa por, depois palavra, depois contém, e em empate os
+nomes mais curtos primeiro. Os alimentos já presentes na lista ficam de fora,
+porque desses já trata o aviso do capítulo 23.</p>
+
+<pre class="term"><code>"cebol"  → cebola · cebola bio · cebola de 500 g · cebola em gomos · cebola desidratada
+"alho"   → alho · alho bio · alho em pó · alho-porro · alho picado
+"sal m"  → sal marinho · sal marinho refinado · sal marinho e pimenta do moinho</code></pre>
+
+<p>E, como tudo o resto, é <em>aditivo</em>: nenhuma sugestão é obrigatória, o
+campo aceita sempre texto livre, e escrever algo que não existe no catálogo
+funciona exatamente como antes — que é o que permite «adicionar um novo».</p>
+
 <h2 id="p25"><span class="n">25</span>Limitações</h2>
 
 <ul>
@@ -1283,7 +1354,8 @@ aqui dentro.</p>
 
 <p>Experimenta:</p>
 <ol>
-  <li>Escrever <strong>leite</strong> no campo — aparece o aviso de item já na lista.</li>
+  <li>Escrever <strong>cebol</strong> — aparecem sugestões do catálogo; tocar numa adiciona-a.</li>
+  <li>Escrever <strong>leite</strong> — aparece o aviso de item já na lista.</li>
   <li>Escrever <strong>manteiga</strong> — aparece o aviso da despensa (sensor simulado).</li>
   <li>Premir <span class="kbd">Enter</span> e ver a chamada registada em baixo, como
       <code>callService todo.add_item</code>.</li>
@@ -1370,7 +1442,7 @@ GET /api/trpc/pantry.suggestions?batch=1&amp;input=…                          
 </table>
 
 <footer>
-  Norish Shopping Card v1.1.0 &middot; MIT &middot;
+  Norish Shopping Card v1.2.0 &middot; MIT &middot;
   <a href="https://github.com/jdrdionisio/norish-shopping-card">repositório</a> &middot;
   requer a integração <a href="https://github.com/Caps3n/hass-norish">hass-norish</a>.
   <br>Documento redigido a partir de código-fonte lido e de execuções reais contra a instância do
@@ -1455,7 +1527,11 @@ GET /api/trpc/pantry.suggestions?batch=1&amp;input=…                          
 
   if (window.customElements && customElements.get("norish-shopping-card")) {
     var card = document.createElement("norish-shopping-card");
-    card.setConfig({ title: "Lista de compras", pantry_entity: "sensor.norish_pantry" });
+    card.setConfig({ title: "Lista de compras", pantry_entity: "sensor.norish_pantry",
+      ingredients: ["cebola", "cebola bio", "cebola roxa", "cebolinha", "alho", "alho em pó",
+        "alho-porro", "batata", "batata-doce", "leite", "leite de coco", "leite em pó",
+        "manteiga", "manteiga com sal", "azeite", "azeite virgem", "sal", "sal marinho",
+        "tomate", "tomate seco", "queijo", "arroz", "frango", "farinha", "ovos"] });
     card.hass = hass;
     host.appendChild(card);
     log("(demo ligado — 'hass' simulado, nada sai deste browser)");
