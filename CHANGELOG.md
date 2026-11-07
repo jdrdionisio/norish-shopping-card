@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.0
+
+- **As sugestões funcionam sem configuração nenhuma.** Sem `ingredients_url`, o
+  cartão procura o catálogo sozinho, por esta ordem: `/local/norish-ingredients.json`
+  (o teu catálogo completo, no sítio habitual do HA) e depois
+  `ingredientes-comuns.json`, que vem no repositório e é instalado com o cartão.
+- Nova lista de **509 alimentos de mercearia em português** (`ingredientes-comuns.json`,
+  7 KB), escrita de raiz e licenciada como o código — para uma instalação nova
+  ter sugestões sem precisar de export nenhum do Norish.
+- A descoberta automática falha em silêncio; só uma `ingredients_url` explícita
+  mostra erro (com o URL que falhou).
+
 ## v1.2.1
 
 - Nova opção `suggestions` (por omissão **10**, até 30) — quantas sugestões

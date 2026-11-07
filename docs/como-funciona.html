@@ -92,7 +92,7 @@
   <p>Do cabo de rede à interface: os conceitos de rede que fazem o cartão falar, os conceitos
      de Home Assistant que o fazem pertencer ao sistema, e o caminho concreto que cada toque
      no ecrã percorre até ao Norish.</p>
-  <div class="meta">v1.2.0 &middot;
+  <div class="meta">v1.3.0 &middot;
     <a href="https://github.com/jdrdionisio/norish-shopping-card">github.com/jdrdionisio/norish-shopping-card</a>
   </div>
 </header>
@@ -1295,6 +1295,31 @@ normal: sem CORS, sem preflight, sem chave.</p>
   cada estado. O ficheiro não tem esse custo.
 </div>
 
+<p>Daí o ficheiro estático. E daí também a decisão de <em>onde</em> ele vive, que
+tem três camadas — a pensar em quem instala isto e não quer configurar nada:</p>
+
+<table>
+  <tr><th>Camada</th><th>Onde</th><th>Quem a põe lá</th><th>Quantos nomes</th></tr>
+  <tr><td>1</td><td><code>ingredients_url</code> no YAML</td><td>tu, se quiseres mandar</td><td>o que deres</td></tr>
+  <tr><td>2</td><td><code>/local/norish-ingredients.json</code></td><td>tu, copiando o catálogo completo</td><td>~10 000</td></tr>
+  <tr><td>3</td><td><code>ingredientes-comuns.json</code>, ao lado do cartão</td><td>o HACS, ao instalar</td><td>509</td></tr>
+</table>
+
+<p>A camada 3 existe por causa de uma propriedade do HACS que vale a pena
+conhecer: ele não descarrega um ficheiro, descarrega o <strong>zipball do
+release</strong> e extrai-o todo para <code>config/www/community/&lt;repo&gt;/</code>.
+Logo, tudo o que esteja no repositório fica ao lado do cartão — e o cartão
+encontra-o sozinho, a partir da sua própria URL. É por isso que uma instalação
+nova já sugere alimentos sem tu fazeres nada.</p>
+
+<p>O cartão tenta as camadas por ordem e fica com a primeira que responder. As
+tentativas automáticas falham em <strong>silêncio</strong> (o cartão funciona,
+apenas sem sugestões); só uma <code>ingredients_url</code> escrita à mão é que
+mostra o erro — porque aí o erro é teu e queres vê-lo, e não um 404 invisível.</p>
+
+<pre class="term"><code>"cebol"  → cebola · cebolinha · cebolinho · cebola roxa · cebola em pó     (camada 3, 509 nomes)
+"cebol"  → cebola · cebola bio · cebola-roxa · cebola seca · cebola em pó  (camada 2, 10 070 nomes)</code></pre>
+
 <h4>O que se guarda, e o que se deita fora</h4>
 
 <p>O export bruto do Norish tem <strong>6214 alimentos</strong> com
@@ -1442,7 +1467,7 @@ GET /api/trpc/pantry.suggestions?batch=1&amp;input=…                          
 </table>
 
 <footer>
-  Norish Shopping Card v1.2.0 &middot; MIT &middot;
+  Norish Shopping Card v1.3.0 &middot; MIT &middot;
   <a href="https://github.com/jdrdionisio/norish-shopping-card">repositório</a> &middot;
   requer a integração <a href="https://github.com/Caps3n/hass-norish">hass-norish</a>.
   <br>Documento redigido a partir de código-fonte lido e de execuções reais contra a instância do

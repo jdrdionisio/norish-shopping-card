@@ -15,7 +15,7 @@
  * clear completed, live per-store item counts, store switcher.
  */
 
-const VERSION = "1.2.1";
+const VERSION = "1.3.0";
 const PREFIX = "todo.norish_";
 
 const L = {
@@ -63,6 +63,8 @@ class NorishShoppingCard extends HTMLElement {
                      suggestions: 10 };
     this._catalogue = null;
     this._catState = "idle";
+    this._catSource = null;
+    this._catError = null;
     this._byEntity = {};   // entity_id -> [ {uid, summary, status, ...} ]
     this._unsubs = {};     // entity_id -> unsubscribe fn (or null while pending)
     this._pending = {};    // entity_id -> true while the subscription is opening
@@ -751,6 +753,40 @@ class NorishShoppingCard extends HTMLElement {
     return out;
   }
 
+  /**
+   * Onde procurar o catálogo, por ordem de preferência. Sem configuração
+   * nenhuma, o cartão procura sozinho: primeiro o catálogo completo que o
+   * utilizador tenha posto no sítio habitual do HA, depois a lista comum que
+   * vem no repositório, ao lado do próprio cartão. Só a opção explícita dá
+   * mensagem de erro; as descobertas automáticas falham em silêncio.
+   */
+  _catCandidates() {
+    const explicit = this._config.ingredients_url;
+    if (explicit) return [{ url: explicit, explicit: true }];
+
+    const out = [{ url: "/local/norish-ingredients.json", explicit: false }];
+    const base = this._selfDir();
+    if (base) out.push({ url: base + "ingredientes-comuns.json", explicit: false });
+    return out;
+  }
+
+  /** A pasta de onde este ficheiro foi carregado, para achar o que está ao lado. */
+  _selfDir() {
+    let src = (document.currentScript && document.currentScript.src) || "";
+    if (!src) {
+      const tag = Array.from(document.querySelectorAll("script[src]")).find((s) =>
+        /norish-shopping-card/.test(s.src)
+      );
+      src = tag ? tag.src : "";
+    }
+    if (!src) return null;
+    try {
+      return new URL(".", src).href;
+    } catch (_e) {
+      return null;
+    }
+  }
+
   async _loadCatalogue() {
     if (this._catState === "loading" || this._catState === "ready") return;
 
@@ -762,25 +798,40 @@ class NorishShoppingCard extends HTMLElement {
       return;
     }
 
-    const url = this._config.ingredients_url;
-    if (!url) return;
+    const candidates = this._catCandidates();
+    if (!candidates.length) return;
 
     this._catState = "loading";
     this._renderSugg();
-    try {
-      // cache por omissão: o HA responde 304 quando o ficheiro não mudou, e o
-      // catálogo muda raramente. Trocar o ficheiro -> recarregar com Ctrl+Shift+R.
-      const r = await fetch(url);
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      const list = this._normaliseCatalogue(await r.json());
-      if (!list.length) throw new Error("sem entradas reconhecíveis");
-      this._catalogue = list;
-      this._catState = "ready";
-      console.info(`norish-shopping-card: catálogo com ${list.length} alimentos`);
-    } catch (err) {
-      this._catState = "error";
-      console.warn("norish-shopping-card: falhou o catálogo:", err);
+
+    for (const c of candidates) {
+      try {
+        // cache por omissão: o HA responde 304 quando o ficheiro não mudou, e o
+        // catálogo muda raramente. Trocar o ficheiro -> recarregar com Ctrl+Shift+R.
+        const r = await fetch(c.url);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const list = this._normaliseCatalogue(await r.json());
+        if (!list.length) throw new Error("sem entradas reconhecíveis");
+        this._catalogue = list;
+        this._catState = "ready";
+        this._catSource = c.url;
+        console.info(`norish-shopping-card: catálogo com ${list.length} alimentos (${c.url})`);
+        this._renderSugg();
+        return;
+      } catch (err) {
+        if (c.explicit) {
+          // configurado à mão: o utilizador quer saber que falhou
+          this._catState = "error";
+          this._catError = c.url;
+          console.warn("norish-shopping-card: falhou o catálogo:", c.url, err);
+          this._renderSugg();
+          return;
+        }
+        console.info("norish-shopping-card: sem catálogo em", c.url);
+      }
     }
+
+    this._catState = "idle";
     this._renderSugg();
   }
 
@@ -827,9 +878,9 @@ class NorishShoppingCard extends HTMLElement {
       el.classList.remove("hidden");
       return;
     }
-    if (this._catState === "error" && this._config.ingredients_url) {
+    if (this._catState === "error") {
       el.innerHTML =
-        `<span class="note">${L.cat_error} (${this._esc(this._config.ingredients_url)})</span>`;
+        `<span class="note">${L.cat_error} (${this._esc(this._catError || "")})</span>`;
       el.classList.remove("hidden");
       return;
     }

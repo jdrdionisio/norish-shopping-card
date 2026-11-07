@@ -85,7 +85,7 @@ entities:
 | `entities` | lista de ids    | (auto-descoberta)    | Lista explícita de entidades `todo.norish_*` e respetiva ordem. |
 | `warn_duplicates` | bool     | `true`               | Avisar quando o texto escrito já corresponde a um item da lista. |
 | `pantry_entity`   | entity id | (nenhuma)           | Sensor com a despensa do Norish; liga o aviso «já tens em casa». Ver `docs/pantry-opcional.yaml`. |
-| `ingredients_url` | URL      | (nenhuma)            | Ficheiro JSON com o catálogo de alimentos, servido pelo HA (ex. `/local/norish-ingredients.json`); liga as sugestões ao escrever. |
+| `ingredients_url` | URL      | (descoberto)         | Ficheiro JSON com o catálogo de alimentos. Se não indicares nada, o cartão procura sozinho (ver abaixo). |
 | `ingredients`     | lista    | (nenhuma)            | O mesmo catálogo, mas escrito no YAML — para listas curtas. |
 | `suggestions`     | número   | `10`                 | Quantas sugestões mostrar (1 a 30). |
 
@@ -129,6 +129,25 @@ escreve (a taxonomia do Open Food Facts, com os nomes em português). Ele não
 está exposto ao Home Assistant, por isso tem de ser materializado num ficheiro
 que o HA sirva **na mesma origem** — e aí o cartão lê-o sem CORS e sem chave.
 
+### Descobre sozinho
+
+**Não precisas de configurar nada.** Sem `ingredients_url`, o cartão procura por
+esta ordem, e usa o primeiro que encontrar:
+
+1. `/local/norish-ingredients.json` — o catálogo completo, se o puseres no
+   `config/www` do Home Assistant (é o sítio habitual);
+2. `ingredientes-comuns.json` — uma lista de **509 alimentos de mercearia em
+   português**, que vem no repositório e por isso é instalada com o cartão
+   dentro de `/config/www/community/norish-shopping-card/`.
+
+Falhas na descoberta automática são silenciosas: o cartão funciona, apenas sem
+sugestões. Só uma `ingredients_url` escrita à mão é que mostra erro — para não
+te deixar com um 404 invisível.
+
+Ou seja: instalas o cartão pelo HACS e as sugestões já funcionam. E se quiseres
+o catálogo completo do Norish (10 000 nomes em vez de 509), põe o ficheiro em
+`config/www/norish-ingredients.json` e não mudes mais nada.
+
 ### Como obter o ficheiro
 
 **Se já tens um export do Norish** (`{source, ingredients:[…]}`, com os aliases
@@ -158,18 +177,22 @@ scripts/norish-catalogue-dump.py --status          # quanto falta?
 scripts/norish-catalogue-dump.py --max-calls 400   # uma passagem
 ```
 
-### Como instalar
+### Como instalar um catálogo completo (opcional)
+
+Basta copiar o ficheiro para a pasta `www` do Home Assistant — o cartão
+encontra-o sozinho, sem configuração:
 
 ```bash
 cp norish-ingredients.json /config/www/
 ```
 
-e no cartão:
+Se preferires outro sítio, indica-o:
 
 ```yaml
 type: custom:norish-shopping-card
 title: Lista de compras
 ingredients_url: /local/norish-ingredients.json
+suggestions: 16
 ```
 
 `/local/` é a pasta `config/www` do Home Assistant, servida na mesma origem do
