@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Norish Shopping Card — como funciona</title>
+<style>
+  :root{
+    --primary:#03a9f4;
+    --bg:#f2f4f7;
+    --card:#ffffff;
+    --ink:#1f2328;
+    --muted:#5b6570;
+    --line:#dfe3e8;
+    --code-bg:#0f172a;
+    --code-ink:#e2e8f0;
+    --ok:#1a7f37;
+    --warn:#9a6700;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:16px/1.6 'Roboto','Noto Sans',system-ui,-apple-system,sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px}
+  header.top{
+    background:linear-gradient(135deg,#0288d1,#03a9f4);
+    color:#fff;border-radius:16px;padding:28px 26px;margin-bottom:28px;
+    box-shadow:0 6px 20px rgba(2,136,209,.25);
+  }
+  header.top h1{margin:0 0 6px;font-size:1.7rem;letter-spacing:-.2px}
+  header.top p{margin:0;opacity:.95;font-size:.98rem}
+  header.top .meta{margin-top:14px;font-size:.82rem;opacity:.85}
+  h2{
+    font-size:1.25rem;margin:38px 0 12px;padding-bottom:8px;
+    border-bottom:2px solid var(--line);
+  }
+  h3{font-size:1.02rem;margin:24px 0 8px}
+  p{margin:10px 0}
+  a{color:#0277bd}
+  code{font-family:'JetBrains Mono','Fira Mono',Consolas,monospace;font-size:.88em}
+  p code,li code,td code{background:#eef2f6;padding:2px 5px;border-radius:5px}
+  pre{
+    background:var(--code-bg);color:var(--code-ink);border-radius:10px;
+    padding:14px 16px;overflow:auto;font-size:.85rem;line-height:1.55;
+    margin:12px 0;
+  }
+  pre code{background:none;padding:0;color:inherit}
+  .out{
+    background:#fbfcfd;border:1px solid var(--line);border-left:4px solid var(--primary);
+    border-radius:8px;padding:12px 14px;margin:12px 0;font-family:Consolas,monospace;
+    font-size:.82rem;white-space:pre;overflow:auto;color:#2b3138;
+  }
+  .out strong{color:var(--ok)}
+  .cardbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+  .grid{display:grid;gap:14px;grid-template-columns:1fr}
+  @media(min-width:720px){ .grid.two{grid-template-columns:1fr 1fr} }
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.9rem}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#eef2f6;font-weight:600}
+  .tag{
+    display:inline-block;background:#e1f5fe;color:#0277bd;border:1px solid #b3e5fc;
+    border-radius:999px;padding:1px 9px;font-size:.76rem;font-weight:600;margin-right:6px;
+  }
+  .note{border-left:4px solid var(--warn);background:#fff8e6;padding:10px 14px;border-radius:8px;margin:14px 0;font-size:.92rem}
+  .ok{border-left-color:var(--ok);background:#eaf7ee}
+  .flow{
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin:16px 0;
+  }
+  .node{
+    border:2px solid var(--primary);border-radius:10px;padding:9px 13px;
+    background:#f7fcff;font-size:.85rem;font-weight:600;text-align:center;line-height:1.35;
+  }
+  .node small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
+  .arrow{color:var(--primary);font-weight:700;font-size:1.2rem}
+  .arrow small{display:block;color:var(--muted);font-weight:400;font-size:.7rem;white-space:nowrap}
+  .demo{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:16px 0;display:flex;justify-content:center}
+  footer{margin-top:50px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px}
+  .kbd{background:#eef2f6;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 6px;font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Norish Shopping Card</h1>
+  <p>Como funciona o cartão de lista de compras estilo Bring! para Home Assistant,
+     assente nas entidades to-do da integração <code>hass-norish</code>.</p>
+  <div class="meta">
+    v1.0.0 &middot; <a href="https://github.com/jdrdionisio/norish-shopping-card" style="color:#fff;text-decoration:underline">github.com/jdrdionisio/norish-shopping-card</a>
+  </div>
+</header>
+
+<h2>1. Visão geral</h2>
+
+<p>O cartão é uma camada de interface. Não conhece o Norish, não tem chave de API e não faz
+pedidos HTTP ao servidor de receitas. Lê e escreve <strong>entidades to-do do Home Assistant</strong>,
+e é a integração que trata do resto.</p>
+
+<div class="flow">
+  <div class="node">Cartão<br><small>norish-shopping-card.js</small></div>
+  <div class="arrow">&rarr;<small>websocket · serviços</small></div>
+  <div class="node">HA core<br><small>componente <code>todo</code></small></div>
+  <div class="arrow">&rarr;<small>tRPC + x-api-key</small></div>
+  <div class="node">hass-norish<br><small>custom_component</small></div>
+  <div class="arrow">&rarr;</div>
+  <div class="node">Norish<br><small>API v1</small></div>
+</div>
+
+<p>Há duas direções de tráfego, e cada uma usa um mecanismo diferente:</p>
+
+<table>
+  <tr><th>Direção</th><th>Mecanismo</th><th>Porquê</th></tr>
+  <tr>
+    <td><strong>Ler</strong> a lista</td>
+    <td>Subscrição websocket <code>todo/item/subscribe</code></td>
+    <td>O servidor empurra a lista; o cartão não faz polling e atualiza sozinho.</td>
+  </tr>
+  <tr>
+    <td><strong>Escrever</strong> (adicionar, marcar, editar, apagar)</td>
+    <td>Serviços <code>todo.*</code> via <code>hass.callService()</code></td>
+    <td>Reutiliza o caminho oficial; o HA valida e a integração sincroniza com o Norish.</td>
+  </tr>
+</table>
+
+<h2>2. Porque um cartão e não uma integração</h2>
+
+<p>Porque os dados já existem como entidades. A integração <code>hass-norish</code> cria
+<strong>uma entidade to-do por loja</strong> mais uma para os itens sem loja. Uma integração nova
+obrigaria a repetir autenticação, limites de pedidos e serialização que a existente já resolve —
+e colocaria uma chave de API num ficheiro de JavaScript.</p>
+
+<div class="cardbox">
+  <span class="tag">regra</span>
+  Se o dado já está exposto como entidade, o cartão conduz a entidade. A chave fica no servidor,
+  não há CORS e herda-se a lógica de retry da integração.
+</div>
+
+<h2>3. As entidades em uso</h2>
+
+<p>Nesta instância (HA 2026.11.0) o cartão descobre pelo prefixo <code>todo.norish_</code>:</p>
+
+<table>
+  <tr><th>Entidade</th><th>Nome</th><th>Lista</th></tr>
+  <tr><td><code>todo.norish_unsorted</code></td><td>Unsorted</td><td>Itens sem loja (aparece sempre primeiro)</td></tr>
+  <tr><td><code>todo.norish_auchan</code></td><td>Auchan</td><td>Itens da loja Auchan</td></tr>
+  <tr><td><code>todo.norish_continente</code></td><td>Continente</td><td>Itens da loja Continente</td></tr>
+  <tr><td><code>todo.norish_lidl</code></td><td>Lidl</td><td>Itens da loja Lidl</td></tr>
+  <tr><td><code>todo.norish_mercadona</code></td><td>Mercadona</td><td>Itens da loja Mercadona</td></tr>
+</table>
+
+<p>O prefixo é o único critério fiável: a instância tem outras listas
+(<code>todo.lista_de_compras</code>, <code>todo.compras</code>, do Bring) que <strong>não</strong>
+podem aparecer no cartão. Cada entidade declara <code>supported_features = 7</code> —
+criar (1) + apagar (2) + editar (4) — ou seja, <em>sem</em> reordenar (8) e <em>sem</em> descrição (64).
+O cartão esconde o que a entidade não sabe fazer em vez de mostrar botões que falham.</p>
+
+<h2>4. Ler a lista — subscrição websocket</h2>
+
+<p>Não há polling. O cartão abre uma subscrição por loja e recebe a lista sempre que ela muda.
+A subscrição <strong>também entrega imediatamente a lista inicial</strong>, por isso serve de
+primeiro carregamento:</p>
+
+<pre><code>hass.connection.subscribeMessage(
+  (msg) =&gt; {
+    this._byEntity[entity_id] = msg.items || [];   // e.g. [{uid, summary, status}]
+    this._renderStores();                          // atualiza as contagens no seletor
+    this._render();                                // redesenha a lista visível
+  },
+  { type: "todo/item/subscribe", entity_id }
+).then((unsub) =&gt; { this._unsubs[entity_id] = unsub; });</code></pre>
+
+<p>O cartão subscreve a <strong>todas</strong> as lojas ao mesmo tempo, não só à visível — é assim
+que o seletor mostra a contagem de itens ativos de cada loja em tempo real. Quando uma loja nova
+aparece (ou desaparece) na instância, a assinatura do conjunto de entidades muda e as subscrições
+são refeitas.</p>
+
+<p>Forma de cada item no fio:</p>
+
+<pre><code>{ "uid": "ac8bfdc4-f02f-4f7e-996b-d26d9b5bb2ea",
+  "summary": "2 kg batatas",
+  "status": "needs_action" }     // ou "completed"</code></pre>
+
+<h2>5. Escrever — os serviços to-do</h2>
+
+<p>Cada funcionalidade mapeia diretamente num serviço do componente <code>todo</code>:</p>
+
+<table>
+  <tr><th>Ação no cartão</th><th>Serviço</th><th>Dados</th></tr>
+  <tr><td>Adicionar item (Enter)</td><td><code>todo.add_item</code></td><td><code>{entity_id, item:"texto"}</code></td></tr>
+  <tr><td>Marcar/desmarcar feita</td><td><code>todo.update_item</code></td><td><code>{entity_id, item:uid, status:"completed"|"needs_action"}</code></td></tr>
+  <tr><td>Editar o texto</td><td><code>todo.update_item</code></td><td><code>{entity_id, item:uid, rename:"novo texto"}</code></td></tr>
+  <tr><td>Apagar item</td><td><code>todo.remove_item</code></td><td><code>{entity_id, item:uid}</code></td></tr>
+  <tr><td>Limpar concluídos</td><td><code>todo.remove_completed_items</code></td><td><code>{entity_id}</code></td></tr>
+</table>
+
+<p>Marcar e editar usam o <em>mesmo</em> serviço, mas o cartão envia-os em
+<strong>chamadas separadas</strong>:</p>
+
+<pre><code>_toggle(uid, checked) {
+  this._hass.callService("todo", "update_item", {
+    entity_id: this._selected, item: uid,
+    status: checked ? "completed" : "needs_action",
+  });
+}
+
+_commitEdit(uid, texto) {
+  this._hass.callService("todo", "update_item", {
+    entity_id: this._selected, item: uid, rename: texto,
+  });
+}</code></pre>
+
+<div class="note">
+  <strong>Porquê separadas:</strong> na hass-norish, uma única chamada com
+  <code>rename</code> e <code>status</code> ao mesmo tempo responde HTTP 200 mas só aplica o
+  <code>rename</code> — o <code>status</code> fica no valor antigo. Enviar as duas operações em
+  chamadas distintas é correto em qualquer integração e evita o problema.
+</div>
+
+<h2>6. Renderização e reatividade</h2>
+
+<p>Três decisões explicam o comportamento do cartão:</p>
+
+<h3>O <code>set hass</code> dispara a cada mudança de estado</h3>
+<p>Num HA real isso acontece dezenas de vezes por minuto. Por isso o cartão <strong>nunca</strong>
+reconstrói o shadow DOM nesse setter: só reconstrói quando o <em>conjunto</em> de entidades muda
+(comparado por assinatura), e redesenha a lista apenas quando chega um push da subscrição.</p>
+
+<h3>O campo de adicionar vive fora da parte redesenhada</h3>
+<p>É o que permite escrever um item enquanto chegam atualizações sem perder o foco nem o cursor.</p>
+
+<pre><code>&lt;div class="card"&gt;
+  &lt;div class="head"&gt;   título + seletor de loja   &lt;/div&gt;
+  &lt;div class="add"&gt;    &lt;input&gt; + botão +          &lt;/div&gt;   &lt;-- nunca redesenhado
+  &lt;div class="list"&gt;   itens ativos               &lt;/div&gt;   &lt;-- redesenhado a cada push
+  ...
+&lt;/div&gt;</code></pre>
+
+<h3>Rede de segurança após cada escrita</h3>
+<p>A integração refresca o coordenador depois de cada mutação, mas essa ida-e-volta pode demorar.
+O cartão relê a lista via <code>todo/item/list</code> aos ~0,5 s e ~1,6 s, para o ecrã assentar
+mesmo que um push se perca.</p>
+
+<p>Os eventos são tratados por delegação nos contentores da lista (um <code>change</code> para as
+caixas, <code>click</code> para apagar/editar, <code>keydown</code>+<code>focusout</code> para o
+nome), em vez de religar ouvintes a cada redesenho. As cores vêm todas de variáveis de tema do HA
+(<code>--primary-color</code>, <code>--card-background-color</code>, <code>--divider-color</code>…),
+por isso o cartão acompanha o tema claro ou escuro.</p>
+
+<h2>7. Funcionalidades, uma a uma</h2>
+
+<div class="grid two">
+  <div class="cardbox">
+    <h3 style="margin-top:0">Adicionar</h3>
+    <p>Escrever e premi <span class="kbd">Enter</span> (ou o botão <strong>+</strong>). O campo
+    limpa-se de imediato e o item aparece quando o push chega. O Norish volta a interpretar o
+    texto, por isso <code>2 kg batatas</code> pode voltar normalizado.</p>
+  </div>
+  <div class="cardbox">
+    <h3 style="margin-top:0">Marcar feita</h3>
+    <p>A caixa envia <code>status</code>. O item sai da lista ativa e entra na secção
+    <em>concluídos</em>, riscado.</p>
+  </div>
+  <div class="cardbox">
+    <h3 style="margin-top:0">Editar</h3>
+    <p>Tocar no texto transforma-o num campo editável. <span class="kbd">Enter</span> grava,
+    <span class="kbd">Esc</span> cancela, sair do campo também grava.</p>
+  </div>
+  <div class="cardbox">
+    <h3 style="margin-top:0">Apagar</h3>
+    <p>O <strong>&#10005;</strong> remove o item pelo <code>uid</code>.</p>
+  </div>
+  <div class="cardbox">
+    <h3 style="margin-top:0">Limpar concluídos</h3>
+    <p>Um serviço para toda a lista, em vez de N remoções.</p>
+  </div>
+  <div class="cardbox">
+    <h3 style="margin-top:0">Seletor com contagens</h3>
+    <p>Cada opção mostra os itens ativos dessa loja, ex. <em>Mercadona (3)</em>. <em>Unsorted</em>
+    aparece sempre primeiro.</p>
+  </div>
+</div>
+
+<h2>8. Configuração</h2>
+
+<pre><code># mínimo — descobre todas as listas sozinho
+type: custom:norish-shopping-card
+title: Lista de compras
+
+# opcional — fixar listas e ordem
+type: custom:norish-shopping-card
+title: Compras da semana
+entities:
+  - todo.norish_unsorted
+  - todo.norish_mercadona
+  - todo.norish_continente</code></pre>
+
+<table>
+  <tr><th>Opção</th><th>Tipo</th><th>Por omissão</th><th>Descrição</th></tr>
+  <tr><td><code>title</code></td><td>string</td><td>Lista de compras</td><td>Título no cabeçalho.</td></tr>
+  <tr><td><code>entities</code></td><td>lista de ids</td><td>auto</td><td>Entidades <code>todo.norish_*</code> a mostrar, e a ordem.</td></tr>
+</table>
+
+<h2>9. Limitações conhecidas</h2>
+
+<ul>
+  <li><strong>Criar lojas não é possível pelo cartão.</strong> As lojas vivem na app Norish; a
+      integração só as descobre. O cartão faz CRUD de <em>itens</em>, nunca de listas.</li>
+  <li><strong>Sem arrastar para reordenar.</strong> A entidade não expõe
+      <code>MOVE_TODO_ITEM</code>, por isso a função não existe.</li>
+  <li><strong>Sem imagens, por opção.</strong> O cartão é só texto.</li>
+  <li><strong>O texto pode voltar alterado.</strong> O servidor Norish reanalisa quantidade e
+      unidade ao gravar.</li>
+</ul>
+
+<h2>10. Demonstração ao vivo</h2>
+
+<p>Abaixo corre o <em>próprio</em> ficheiro do cartão (<code>norish-shopping-card.js</code>), com um
+<code>hass</code> simulado em memória — sem Home Assistant, sem rede. Experimenta adicionar, marcar,
+editar e apagar: as operações são registadas em baixo em vez de enviadas para o servidor.</p>
+
+<div class="demo" id="demo"><noscript>Precisa de JavaScript.</noscript></div>
+<div class="out" id="log">(as chamadas de serviço aparecem aqui)</div>
+
+<p id="demofail" style="display:none;color:#db4437">
+  Não foi possível carregar <code>../norish-shopping-card.js</code> — abre esta página a partir da
+  pasta <code>docs/</code> do repositório.
+</p>
+
+<h2>11. Verificação na instância real</h2>
+
+<p>Antes de publicar, o caminho de dados foi exercitado contra o HA do utilizador (2026.11.0), com um
+item descartável que foi apagado no fim. Saídas reais:</p>
+
+<h3>Adicionar, ler a forma do item, editar, marcar, apagar</h3>
+<pre><code>POST /api/services/todo/add_item            -> HTTP 200
+POST /api/services/todo/get_items?return_response
+POST /api/services/todo/update_item (rename)  -> HTTP 200
+POST /api/services/todo/update_item (status)  -> HTTP 200
+POST /api/services/todo/remove_completed_items -> HTTP 200
+POST /api/services/todo/remove_item           -> HTTP 200</code></pre>
+
+<div class="out">{
+  "service_response": {
+    "todo.norish_unsorted": {
+      "items": [
+        {
+          "summary": "TESTE cartao — renomeado",
+          "uid": "ac8bfdc4-f02f-4f7e-996b-d26d9b5bb2ea",
+          "status": "completed"
+        }
+      ]
+    }
+  }
+}
+<strong>lista final: items: []</strong>   (item de teste removido)</div>
+
+<div class="note ok">
+  <strong>O que ficou provado:</strong> os nomes dos serviços, a forma
+  <code>{summary, uid, status}</code>, o rename, o toggle, as remoções e o estado final limpo. E
+  também o caso combinado: uma só chamada com <code>rename</code>+<code>status</code> devolve 200 e
+  deixa o <code>status</code> em <code>needs_action</code> — daí as chamadas separadas no cartão.
+</div>
+
+<h3>Validação do repositório (HACS)</h3>
+<div class="out">&lt;Validation topics&gt;   completed
+&lt;Validation images&gt;   completed
+&lt;Validation hacsjson&gt; completed
+&lt;Plugin jdrdionisio/norish-shopping-card&gt; Validation completed   <strong>8/8</strong></div>
+
+<footer>
+  Norish Shopping Card v1.0.0 &middot; MIT &middot;
+  <a href="https://github.com/jdrdionisio/norish-shopping-card">repositório</a> &middot;
+  requer a integração <a href="https://github.com/Caps3n/hass-norish">hass-norish</a>.
+</footer>
+</div>
+
+<script src="../norish-shopping-card.js" onerror="document.getElementById('demofail').style.display='block'"></script>
+<script>
+(function () {
+  var host = document.getElementById("demo");
+  var logEl = document.getElementById("log");
+  var lines = [];
+  function log(s) {
+    lines.push(s);
+    logEl.textContent = lines.join("\n");
+  }
+
+  var NORISH = {
+    "todo.norish_unsorted": [
+      { uid: "u1", summary: "Pão de mistura", status: "needs_action" },
+      { uid: "u2", summary: "Leite meio-gordo", status: "needs_action" },
+      { uid: "u3", summary: "Ovos", status: "completed" }
+    ],
+    "todo.norish_lidl": [
+      { uid: "l1", summary: "2 kg batatas", status: "needs_action" },
+      { uid: "l2", summary: "Iogurtes naturais", status: "needs_action" },
+      { uid: "l3", summary: "Azeite", status: "needs_action" }
+    ],
+    "todo.norish_mercadona": [{ uid: "m1", summary: "Fruta", status: "needs_action" }],
+    "todo.norish_continente": [],
+    "todo.norish_auchan": []
+  };
+
+  // hass simulado: as subscrições recebem a lista e as escritas alteram-na em memória
+  var listeners = {};
+  function push(e) {
+    (listeners[e] || []).forEach(function (cb) { cb({ items: NORISH[e] }); });
+  }
+
+  var hass = {
+    states: Object.keys(NORISH).reduce(function (acc, e) {
+      acc[e] = {
+        entity_id: e,
+        attributes: {
+          friendly_name: "Norish " + e.replace("todo.norish_", "").replace(/^./, function (c) { return c.toUpperCase(); })
+        }
+      };
+      return acc;
+    }, {}),
+    connection: {
+      subscribeMessage: function (cb, msg) {
+        var e = msg.entity_id;
+        (listeners[e] = listeners[e] || []).push(cb);
+        cb({ items: NORISH[e] || [] });               // push inicial, como o HA
+        return Promise.resolve(function () {});
+      }
+    },
+    callService: function (domain, service, data) {
+      log("callService  " + domain + "." + service + "  " + JSON.stringify(data));
+      var items = NORISH[data.entity_id] || (NORISH[data.entity_id] = []);
+      if (service === "add_item") {
+        items.push({ uid: "n" + Math.random().toString(36).slice(2, 7), summary: data.item, status: "needs_action" });
+      } else if (service === "update_item") {
+        items.forEach(function (it) {
+          if (it.uid === data.item) {
+            if (data.rename) it.summary = data.rename;
+            if (data.status) it.status = data.status;
+          }
+        });
+      } else if (service === "remove_item") {
+        NORISH[data.entity_id] = items.filter(function (it) { return it.uid !== data.item; });
+      } else if (service === "remove_completed_items") {
+        NORISH[data.entity_id] = items.filter(function (it) { return it.status !== "completed"; });
+      }
+      push(data.entity_id);
+      return Promise.resolve();
+    },
+    callWS: function (msg) { return Promise.resolve({ items: NORISH[msg.entity_id] || [] }); }
+  };
+
+  if (window.customElements && customElements.get("norish-shopping-card")) {
+    var card = document.createElement("norish-shopping-card");
+    card.setConfig({ title: "Lista de compras" });
+    card.hass = hass;
+    host.appendChild(card);
+    log("(demo carregado — as escritas são só locais)");
+  } else {
+    document.getElementById("demofail").style.display = "block";
+  }
+})();
+</script>
+</body>
+</html>

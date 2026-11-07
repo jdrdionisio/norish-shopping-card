@@ -10,6 +10,9 @@ Só texto, sem imagens. O cartão **não fala com a API do Norish** — lê e es
 as entidades to-do que a integração já expõe (uma por loja) e deixa a chave da
 API onde está: no servidor.
 
+📖 **Explicação detalhada de como funciona** (com demo ao vivo, sem Home Assistant):
+[`docs/como-funciona.html`](docs/como-funciona.html)
+
 ## Funcionalidades
 
 - **Seletor de loja** no cabeçalho: `Unsorted` + uma lista por loja
