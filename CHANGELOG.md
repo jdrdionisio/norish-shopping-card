@@ -2,17 +2,21 @@
 
 ## Por publicar
 
-- **README (secção de automações): generalizar o «não quero ser avisado das minhas
-  próprias ações».** A nota atual diz para acrescentar um `condition` com
-  `trigger.event.data.user_id != '<o teu id>'`. Isso não generaliza: o id é um
-  UUID por instância (o YAML deixa de ser portátil) e o filtro exclui uma só
-  pessoa (não escala para N utilizadores). Substituir por um mapa
-  `user_id -> serviço de notify` e avisar todos **excepto** o autor —
-  `{{ quem.items() | rejectattr('0', 'eq', autor) | map(attribute='1') | list }}`
-  — que acrescenta pessoas sem tocar na automação. Explicar também que
-  `trigger.event.data.user_id` é igual a `trigger.event.context.user_id` (comparar
-  um com o outro é sempre verdadeiro) e que «eu» não existe numa automação: o
-  autor da ação é o próprio contexto do trigger.
+- **README bilingue.** O `README.md` passou a inglês (é a porta de entrada do
+  projeto no HACS) e o português ficou em `README.pt.md`, com um seletor de língua
+  no topo dos dois. O `docs/como-funciona.html` continua só em português.
+- **Secção de automações alargada a três receitas**: aviso por alteração; resumo
+  agrupado por pessoa após a última alteração (com auxiliar de texto); e aviso
+  genérico, sem auxiliar nenhum. As receitas trazem as armadilhas que custaram a
+  encontrar: o limite de 255 caracteres do auxiliar, o `delay` que não sobrevive a
+  um reinício do HA, e a leitura do payload por **subscrito**
+  (`trigger.event.data['items']`) em vez de atributo — `d.items` devolve o método
+  do dicionário, não o valor.
+- A nota anterior (generalizar o «não me avisar a mim») fica resolvida por esta
+  secção: a receita 2 usa um mapa nome → serviço de notify e exclui quem
+  participou, em vez de um `user_id` fixo. «Eu» não existe numa automação, por isso
+  o problema generaliza-se invertendo-o (mapa de destinatários), nunca com um id
+  hardcoded.
 
 ## v1.4.0
 
