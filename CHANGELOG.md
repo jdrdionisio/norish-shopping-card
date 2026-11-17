@@ -1,5 +1,19 @@
 # Changelog
 
+## Por publicar
+
+- **README (secção de automações): generalizar o «não quero ser avisado das minhas
+  próprias ações».** A nota atual diz para acrescentar um `condition` com
+  `trigger.event.data.user_id != '<o teu id>'`. Isso não generaliza: o id é um
+  UUID por instância (o YAML deixa de ser portátil) e o filtro exclui uma só
+  pessoa (não escala para N utilizadores). Substituir por um mapa
+  `user_id -> serviço de notify` e avisar todos **excepto** o autor —
+  `{{ quem.items() | rejectattr('0', 'eq', autor) | map(attribute='1') | list }}`
+  — que acrescenta pessoas sem tocar na automação. Explicar também que
+  `trigger.event.data.user_id` é igual a `trigger.event.context.user_id` (comparar
+  um com o outro é sempre verdadeiro) e que «eu» não existe numa automação: o
+  autor da ação é o próprio contexto do trigger.
+
 ## v1.4.0
 
 - **Eventos opcionais, com quem fez o quê.** Com `fire_events: true`, o cartão
