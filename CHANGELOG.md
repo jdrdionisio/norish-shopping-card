@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.4.0
+
+- **Eventos opcionais, com quem fez o quê.** Com `fire_events: true`, o cartão
+  dispara `norish_shopping_card_changed` depois de cada ação, com `action`
+  (`added`/`removed`/`completed`/`reopened`/`renamed`), `user_id`/`user_name`,
+  `entity_id`/`store` e o item (`item`/`uid`, ou `items`/`uids` no «Limpar»).
+  Desligado por omissão.
+- Motivo: os triggers `todo.*` do core dizem **que** itens mudaram mas não **quem**
+  — os dados de disparo não trazem o contexto do utilizador. O cartão corre com o
+  `hass` do utilizador, por isso sabe-o.
+- O evento herda o contexto do pedido, pelo que `trigger.event.context.user_id`
+  também fica preenchido.
+- Disparar eventos exige conta de administrador no HA (limitação do core): para
+  quem não é admin o anúncio é ignorado com um aviso na consola.
+- README com a secção de automações e o exemplo de YAML.
+
 ## v1.3.1
 
 - **Licença mudada de MIT para Apache-2.0.** A Apache-2.0 mantém a permissividade

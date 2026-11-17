@@ -17,10 +17,16 @@
  * Features: add item, mark/unmark done, inline rename, delete item,
  * clear completed, live per-store item counts, store switcher, duplicate
  * warning, food suggestions from a catalogue, pantry warnings.
+ *
+ * Optional: with `fire_events: true` the card announces every action as a
+ * Home Assistant event (`norish_shopping_card_changed`), carrying the user who
+ * did it — something the todo.* triggers cannot tell. See _fire().
  */
 
-const VERSION = "1.3.1";
+const VERSION = "1.4.0";
 const PREFIX = "todo.norish_";
+/** Event fired on each card action when `fire_events: true` (see _fire). */
+const EVENT = "norish_shopping_card_changed";
 
 const L = {
   add_placeholder: "Adicionar item…",
@@ -64,7 +70,7 @@ class NorishShoppingCard extends HTMLElement {
     this._hass = null;
     this._config = { title: "Lista de compras", entities: null, warn_duplicates: true,
                      pantry_entity: null, ingredients_url: null, ingredients: null,
-                     suggestions: 10 };
+                     suggestions: 10, fire_events: false };
     this._catalogue = null;
     this._catState = "idle";
     this._catSource = null;
@@ -89,7 +95,8 @@ class NorishShoppingCard extends HTMLElement {
     }
     this._config = Object.assign(
       { title: "Lista de compras", entities: null, warn_duplicates: true,
-        pantry_entity: null, ingredients_url: null, ingredients: null, suggestions: 10 },
+        pantry_entity: null, ingredients_url: null, ingredients: null, suggestions: 10,
+        fire_events: false },
       config || {}
     );
     this._sig = null;
@@ -914,10 +921,12 @@ class NorishShoppingCard extends HTMLElement {
   _addItem(text) {
     const t = (text || "").trim();
     if (!t || !this._selected) return;
-    this._service("todo", "add_item", {
-      entity_id: this._selected,
-      item: t,
-    });
+    this._service(
+      "todo",
+      "add_item",
+      { entity_id: this._selected, item: t },
+      { action: "added", item: t }
+    );
   }
 
   _add() {
@@ -931,27 +940,50 @@ class NorishShoppingCard extends HTMLElement {
 
   _toggle(uid, checked) {
     if (!uid) return;
-    this._service("todo", "update_item", {
-      entity_id: this._selected,
-      item: uid,
-      status: checked ? "completed" : "needs_action",
-    });
+    const it = this._itemByUid(uid);
+    this._service(
+      "todo",
+      "update_item",
+      {
+        entity_id: this._selected,
+        item: uid,
+        status: checked ? "completed" : "needs_action",
+      },
+      {
+        action: checked ? "completed" : "reopened",
+        uid: uid,
+        item: it ? it.summary : null,
+      }
+    );
   }
 
   _remove(uid) {
     if (!uid) return;
     if (this._editing === uid) this._editing = null;
-    this._service("todo", "remove_item", {
-      entity_id: this._selected,
-      item: uid,
-    });
+    const it = this._itemByUid(uid);
+    this._service(
+      "todo",
+      "remove_item",
+      { entity_id: this._selected, item: uid },
+      { action: "removed", uid: uid, item: it ? it.summary : null }
+    );
   }
 
   _clearDone() {
     if (!this._selected) return;
-    this._service("todo", "remove_completed_items", {
-      entity_id: this._selected,
-    });
+    const done = (this._byEntity[this._selected] || []).filter(
+      (i) => i.status === "completed"
+    );
+    this._service(
+      "todo",
+      "remove_completed_items",
+      { entity_id: this._selected },
+      {
+        action: "removed",
+        items: done.map((i) => i.summary || ""),
+        uids: done.map((i) => i.uid || ""),
+      }
+    );
   }
 
   _startEdit(uid) {
@@ -967,20 +999,88 @@ class NorishShoppingCard extends HTMLElement {
     const cur = items.find((i) => i.uid === uid);
     this._editing = null;
     if (text && cur && text !== cur.summary) {
-      this._service("todo", "update_item", {
-        entity_id: this._selected,
-        item: uid,
-        rename: text,
-      });
+      this._service(
+        "todo",
+        "update_item",
+        { entity_id: this._selected, item: uid, rename: text },
+        { action: "renamed", uid: uid, item: text, previous: cur.summary }
+      );
     } else {
       this._render();
     }
   }
 
-  _service(domain, service, data) {
+  /** The item currently known for a uid, for putting a name on an action. */
+  _itemByUid(uid) {
+    const items = (this._selected && this._byEntity[this._selected]) || [];
+    return items.find((i) => i.uid === uid) || null;
+  }
+
+  /**
+   * Optional: announce an action as a Home Assistant event so automations can
+   * react to it — including *who* did it, which the todo.* triggers cannot tell
+   * (their trigger data carries no user context).
+   *
+   *   event_type: norish_shopping_card_changed
+   *   data: { action, user_id, user_name, entity_id, store,
+   *           item, uid, items, uids, previous }
+   *
+   * `action` is one of: added, removed, completed, reopened, renamed. The
+   * event also inherits the caller's context, so `trigger.event.context.user_id`
+   * works too. Only actions taken *through this card* are announced: items
+   * changed elsewhere (e.g. in the Norish app) have no user to attribute.
+   *
+   * Off unless the card is configured with `fire_events: true`, and it needs the
+   * acting user to be an administrator: Home Assistant allows firing events
+   * only to admins (both the WebSocket `fire_event` command and
+   * `POST /api/events` are admin-only). For anyone else the announcement is
+   * skipped with a console warning, and the card keeps working normally.
+   */
+  _fire(action, extra) {
+    if (!this._config.fire_events) return;
+    if (!this._hass) return;
+    if (
+      typeof this._hass.callWS !== "function" &&
+      typeof this._hass.callApi !== "function"
+    ) {
+      return;
+    }
+    const user = this._hass.user || {};
+    const data = Object.assign(
+      {
+        action: action,
+        user_id: user.id || null,
+        user_name: user.name || null,
+        entity_id: this._selected || null,
+        store: this._selected ? this._name(this._selected) : null,
+        item: null,
+        uid: null,
+        items: [],
+        uids: [],
+        previous: null,
+      },
+      extra || {}
+    );
+    // Convenience: a single item/uid is mirrored into the arrays as well.
+    if (data.item !== null && !data.items.length) data.items = [data.item];
+    if (data.uid !== null && !data.uids.length) data.uids = [data.uid];
+
+    const send =
+      typeof this._hass.callWS === "function"
+        ? this._hass.callWS({ type: "fire_event", event_type: EVENT, event_data: data })
+        : this._hass.callApi("POST", "events/" + EVENT, data);
+    Promise.resolve(send).catch((err) =>
+      console.warn("norish-shopping-card: evento", action, err)
+    );
+  }
+
+  _service(domain, service, data, event) {
     const p = this._hass.callService(domain, service, data);
     Promise.resolve(p)
-      .then(() => this._refreshAfterMutation())
+      .then(() => {
+        if (event) this._fire(event.action, event);
+        return this._refreshAfterMutation();
+      })
       .catch((err) => console.warn("norish-shopping-card:", service, err));
   }
 

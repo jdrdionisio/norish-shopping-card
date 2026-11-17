@@ -88,6 +88,7 @@ entities:
 | `ingredients_url` | URL      | (descoberto)         | Ficheiro JSON com o catálogo de alimentos. Se não indicares nada, o cartão procura sozinho (ver abaixo). |
 | `ingredients`     | lista    | (nenhuma)            | O mesmo catálogo, mas escrito no YAML — para listas curtas. |
 | `suggestions`     | número   | `10`                 | Quantas sugestões mostrar (1 a 30). |
+| `fire_events`     | bool     | `false`              | Anunciar cada ação como um evento HA, com o utilizador que a fez — para automatizações «quem adicionou o quê». Ver abaixo. |
 
 ## Evitar criar itens duplicados
 
@@ -220,6 +221,64 @@ sem língua indicada.
 > Facts, distribuída sob **ODbL**. Por isso é que ele **não** vive neste
 > repositório: é gerado localmente e fica do lado do Home Assistant. Se o
 > redistribuíres, mantém a atribuição e a licença.
+
+## Automações: saber quem adicionou o quê
+
+Os triggers nativos do Home Assistant para listas to-do (`todo.item_added`,
+`todo.item_removed`, `todo.item_completed`) dizem-te **que** itens mudaram, mas não
+**quem** os mudou: os dados de disparo não trazem o contexto do utilizador (é uma
+limitação do core, não da integração). O cartão, esse, corre no browser com o
+`hass` do utilizador autenticado, por isso sabe exatamente quem é.
+
+Com `fire_events: true` o cartão anuncia cada ação como um evento do Home Assistant:
+
+```yaml
+type: custom:norish-shopping-card
+title: Lista de compras
+fire_events: true
+```
+
+Evento `norish_shopping_card_changed`, disparado **depois** de a ação ter corrido
+bem:
+
+| Campo       | Significado |
+|-------------|-------------|
+| `action`    | `added`, `removed`, `completed`, `reopened` ou `renamed`. |
+| `user_id`, `user_name` | Quem fez a ação. |
+| `entity_id`, `store` | A entidade `todo.norish_*` e o nome da loja. |
+| `item`, `uid` | O item (texto e uid), quando é um só. |
+| `items`, `uids` | Listas — usadas pelo «Limpar concluídos», que remove vários de uma vez. |
+| `previous`  | No `renamed`, o texto anterior. |
+
+O evento herda também o contexto do pedido, por isso `trigger.event.context.user_id`
+fica preenchido — útil se preferires filtrar por `context:`.
+
+Exemplo de automação — avisar quando alguém põe algo na lista:
+
+```yaml
+alias: Norish - item adicionado por
+triggers:
+  - trigger: event
+    event_type: norish_shopping_card_changed
+conditions:
+  - condition: template
+    value_template: "{{ trigger.event.data.action == 'added' }}"
+actions:
+  - action: notify.notify
+    data:
+      message: >-
+        {{ trigger.event.data.user_name }} adicionou
+        "{{ trigger.event.data.item }}" a {{ trigger.event.data.store }}.
+```
+
+> **Requer administrador.** O Home Assistant só deixa *disparar* eventos a contas
+> com permissões de administrador (tanto o comando WebSocket `fire_event` como
+> `POST /api/events`). Se quem usa o cartão não for admin, o evento é simplesmente
+> ignorado (fica um aviso na consola do browser) e o cartão continua a funcionar.
+>
+> **Só o cartão é que fala.** Itens adicionados ou removidos noutro sítio — na app
+> Norish, ou noutro painel do HA — chegam ao HA por polling e não têm utilizador a
+> quem atribuir. Para esses casos usa os triggers `todo.*` (dizem o quê, não quem).
 
 ## Notas
 
